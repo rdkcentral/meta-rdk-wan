@@ -38,6 +38,7 @@ CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEn
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'ipoe_health_check', '-DFEATURE_IPOE_HEALTH_CHECK', '', d)}"
 CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt', '-DFEATURE_MAPT', '', d)}"
 CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', ' -DWAN_FAILOVER_SUPPORTED', '', d)}"
+PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
 
 LDFLAGS += " -lprivilege -lpthread -lstdc++"
 
@@ -93,5 +94,15 @@ FILES_${PN}-dbg = " \
     ${bindir}/.debug \
     ${libdir}/.debug \
 "
+FILES_${PN}-gtest = "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${bindir}/RdkWanManager_gtest.bin', '', d)} \
+"
+EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '--enable-gtestapp', '', d)}"
+
+DOWNLOAD_APPS="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'gtestapp-RdkWanManager', '', d)}"
+inherit comcast-package-deploy
+CUSTOM_PKG_EXTNS="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'gtest', '', d)}"
+SKIP_MAIN_PKG="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'yes', 'no', d)}"
+DOWNLOAD_ON_DEMAND="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'yes', 'no', d)}"
 
 do_configure[depends] += "halinterface:do_install"
