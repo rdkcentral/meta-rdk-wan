@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
 DEPENDS = "ccsp-common-library dbus rdk-logger utopia halinterface libunpriv"
 
-require ccsp_common.inc
+require recipes-ccsp/ccsp/ccsp_common.inc
 
 PV = "${RDK_RELEASE}+git${SRCPV}"
 SRC_URI = "git://git@github.com/rdkcentral/RdkPppManager.git;branch=main;protocol=https;name=PppManager"
