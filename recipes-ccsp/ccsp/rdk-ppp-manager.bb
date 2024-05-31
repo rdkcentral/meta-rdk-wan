@@ -10,7 +10,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 
 PV = "${RDK_RELEASE}+git${SRCPV}"
 SRC_URI = "git://git@github.com/rdkcentral/RdkPppManager.git;branch=main;protocol=https;name=PppManager"
-SRCREV = "v1.0.0"
+SRCREV = "f347dee912838c87aa845e4f3c75c1a5922afd07"
 
 SRCREV_FORMAT = "PppManager"
 
