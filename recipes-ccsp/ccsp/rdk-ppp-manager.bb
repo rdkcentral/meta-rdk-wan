@@ -8,13 +8,12 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia halinterface libunpriv"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-PV = "${RDK_RELEASE}+git${SRCPV}"
 SRC_URI = "git://git@github.com/rdkcentral/RdkPppManager.git;branch=main;protocol=https;name=PppManager"
 SRCREV = "v1.0.0"
 
 SRCREV_FORMAT = "PppManager"
 
-PV = "${RDK_RELEASE}+git"
+PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 
