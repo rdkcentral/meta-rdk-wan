@@ -36,6 +36,9 @@ CFLAGS_append = " \
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 
 do_compile_prepend () {
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable', 'true', 'false', d)}; then
+        sed -i '2i <?define WAN_MANAGER_UNIFICATION_ENABLED=True?>' ${S}/config/RdkGponManager.xml
+    fi
     (${PYTHON} ${STAGING_BINDIR_NATIVE}/dm_pack_code_gen.py ${S}/config/RdkGponManager.xml ${S}/source/GponManager/dm_pack_datamodel.c)
 }
 
