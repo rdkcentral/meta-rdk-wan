@@ -7,12 +7,10 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia hal-platform json-hal-lib"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-SRC_URI = "git://github.com/rdkcentral/RdkGponManager.git;branch=main;protocol=https;name=GponManager"
-SRCREV_GponManager = "v1.0.0"
-
+GIT_TAG = "v1.0.0"
+SRC_URI = "git://github.com/rdkcentral/RdkGponManager.git;branch=main;protocol=https;name=GponManager;tag=${GIT_TAG}"
+PV = "${GIT_TAG}+git${SRCPV}"
 EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
-
-PV = "${SRCREV_GponManager}"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -34,9 +32,6 @@ CFLAGS_append = " \
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 
 do_compile_prepend () {
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable', 'true', 'false', d)}; then
-        sed -i '2i <?define WAN_MANAGER_UNIFICATION_ENABLED=True?>' ${S}/config/RdkGponManager.xml
-    fi
     (${PYTHON} ${STAGING_BINDIR_NATIVE}/dm_pack_code_gen.py ${S}/config/RdkGponManager.xml ${S}/source/GponManager/dm_pack_datamodel.c)
 }
 
