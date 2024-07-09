@@ -28,6 +28,9 @@ CFLAGS_append = " \
     -I${STAGING_INCDIR}/ccsp \
     -I ${STAGING_INCDIR}/syscfg \
     -I ${STAGING_INCDIR}/sysevent \
+    -Werror \
+    -Wall \
+    -Wno-error=switch \
     "
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 
