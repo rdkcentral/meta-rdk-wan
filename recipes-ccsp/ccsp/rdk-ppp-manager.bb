@@ -8,9 +8,10 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia halinterface libunpriv"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-GIT_TAG = "v1.0.0"
-SRC_URI := "git://github.com/rdkcentral/RdkPppManager.git;branch=main;protocol=https;name=PppManager;tag=${GIT_TAG}"
-PV = "${GIT_TAG}+git${SRCPV}"
+#GIT_TAG = "v1.0.0"
+SRCREV = "${AUTOREV}"
+SRC_URI := "git://github.com/Sukanya673/RdkPppManager.git;branch=RDKBDEV-2733_src;protocol=https;name=PppManager;"
+PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 
@@ -25,6 +26,8 @@ CFLAGS_append = " \
     -I ${STAGING_INCDIR}/sysevent \
     -I${STAGING_INCDIR}/utapi \
     -I${STAGING_INCDIR}/utctx \
+    -Wall \
+    -Werror \
     "
 
 LDFLAGS += " -lprivilege"
