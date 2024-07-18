@@ -10,7 +10,7 @@ SSTATE_SKIP_CREATION = "1"
 
 #GIT_TAG = "v1.0.0"
 SRCREV = "${AUTOREV}"
-SRC_URI = "git://github.com/Sukanya673/RdkVlanBridgingManager.git;branch=RDKBDEV-2735_Vlan;protocol=https;name=VlanBridgingManager;"
+SRC_URI = "git://github.com/Sukanya673/RdkVlanBridgingManager.git;branch=RDKBDEV-2735_src;protocol=https;name=VlanBridgingManager;"
 PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
