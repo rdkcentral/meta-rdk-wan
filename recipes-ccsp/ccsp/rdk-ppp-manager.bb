@@ -10,7 +10,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 
 #GIT_TAG = "RC1.1.0a"
 SRCREV = "${AUTOREV}"
-SRC_URI := "git://github.com/geoff-lu/RdkPppManager.git;branch=main;protocol=https;name=PppManager;"
+SRC_URI := "git://github.com/geoff-lu/RdkPppManager.git;branch=RDKBDEV-2807;protocol=https;name=PppManager;"
 PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
