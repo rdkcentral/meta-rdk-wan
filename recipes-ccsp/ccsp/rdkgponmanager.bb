@@ -9,7 +9,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 
 #GIT_TAG = "v1.2.0"
 SRCREV = "${AUTOREV}"
-SRC_URI = "git://github.com/sanjaynayakk/RdkGponManager.git;branch=RDKBDEV-2856;protocol=https;name=GponManager;"
+SRC_URI = "git://github.com/Sukanya673/RdkGponManager.git;branch=Src_RDKBDEV-2856;protocol=https;name=GponManager;"
 PV = "${RDK_RELEASE}+git${SRCPV}"
 EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
