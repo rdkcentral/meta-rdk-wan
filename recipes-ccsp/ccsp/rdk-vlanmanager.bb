@@ -22,6 +22,9 @@ CFLAGS_append = " \
     -I${STAGING_INCDIR}/ccsp \
     -I ${STAGING_INCDIR}/syscfg \
     -I ${STAGING_INCDIR}/sysevent \
+    -Werror \
+    -Wall \
+    -Wno-format-truncation \
     "
 
 LDFLAGS += " -lprivilege"
