@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 DEPENDS = "ccsp-common-library dbus rdk-logger utopia json-hal-lib avro-c hal-platform libparodus libunpriv"
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-GIT_TAG = "RC1.1.0"
+GIT_TAG = "RC1.1.0b"
 SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
