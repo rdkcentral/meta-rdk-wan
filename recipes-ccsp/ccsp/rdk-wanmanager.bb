@@ -11,7 +11,6 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 SRC_URI := "git://github.com/rdkcentral/RdkWanManager.git;branch=feature-MAPT-Unification;protocol=https;name=WanManager;"
 SRCREV = "${AUTOREV}"
 
-
 S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig ${@bb.utils.contains("DISTRO_FEATURES", "kirkstone", "python3native", "pythonnative", d)}
