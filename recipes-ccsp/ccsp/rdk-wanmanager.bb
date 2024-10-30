@@ -8,9 +8,9 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-
 SRC_URI := "git://github.com/rdkcentral/RdkWanManager.git;branch=bugfix_mapt-ipv6-addr;protocol=https;name=WanManager;"
 SRCREV = "${AUTOREV}"
+
 
 S = "${WORKDIR}/git"
 

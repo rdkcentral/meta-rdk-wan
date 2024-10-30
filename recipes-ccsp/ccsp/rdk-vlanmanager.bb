@@ -6,9 +6,8 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 DEPENDS = "ccsp-common-library dbus rdk-logger utopia hal-platform libunpriv"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
-SSTATE_SKIP_CREATION = "1"
 
-GIT_TAG = "v1.0.0"
+GIT_TAG = "RC1.2.0"
 SRC_URI = "git://github.com/rdkcentral/RdkVlanBridgingManager.git;branch=main;protocol=https;name=VlanBridgingManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
@@ -23,6 +22,9 @@ CFLAGS_append = " \
     -I${STAGING_INCDIR}/ccsp \
     -I ${STAGING_INCDIR}/syscfg \
     -I ${STAGING_INCDIR}/sysevent \
+    -Werror \
+    -Wall \
+    -Wno-format-truncation \
     "
 
 LDFLAGS += " -lprivilege"
