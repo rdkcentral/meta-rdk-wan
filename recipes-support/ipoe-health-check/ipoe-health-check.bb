@@ -6,9 +6,10 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
 DEPENDS = "rdk-logger rdk-wanmanager"
 
-GIT_TAG = "v1.1.0"
-SRC_URI := "git://github.com/rdkcentral/IPOEHealthCheck.git;branch=main;protocol=https;name=IPoEHealthCheck;tag=${GIT_TAG}"
-PV = "${GIT_TAG}+git${SRCPV}"
+#GIT_TAG = "v1.1.0"
+SRCREV = "${AUTOREV}"
+SRC_URI := "git://github.com/pradeeptakdas/IPOEHealthCheck.git;branch=300a29;protocol=https;name=IPoEHealthCheck;"
+PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 
