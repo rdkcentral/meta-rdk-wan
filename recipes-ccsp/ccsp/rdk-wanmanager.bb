@@ -56,7 +56,7 @@ do_compile_prepend () {
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'dhcp_manager', 'true', 'false', d)}; then
-        sed -i '2i <?define FEATURE_RDKB_DHCP_MANAGER=True?>' ${S}/config/RdkWanManager.xml
+        sed -i '2i <?define FEATURE_RDKB_DHCP_MANAGER=True?>' ${S}/config/${XML_NAME}
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
