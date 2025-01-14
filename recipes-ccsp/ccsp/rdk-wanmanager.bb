@@ -8,7 +8,7 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-GIT_TAG = "RC2.8.0a"
+GIT_TAG = "v2.6.0"
 SRC_URI := "git://github.com/rdkcentral/RdkWanManager.git;branch=main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
@@ -32,17 +32,9 @@ CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 LDFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-lnanomsg', '', d)}"
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', '-DRBUS_BUILD_FLAG_ENABLE', '', d)}"
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'ipoe_health_check', '-DFEATURE_IPOE_HEALTH_CHECK', '', d)}"
+CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt', '-DFEATURE_MAPT', '', d)}"
 CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', ' -DWAN_FAILOVER_SUPPORTED', '', d)}"
 PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
-
-EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable', '--enable-wanunificationsupport', '', d)}"
-# Define a variable to consolidate the check for MAPT features based on DISTRO_FEATURES
-MAPT_FEATURE_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt','true', bb.utils.contains('DISTRO_FEATURES', 'unified_mapt', 'true', 'false', d), d)}"
-
-# Use the variable in CFLAGS_append
-CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
-CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
-CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DNAT46_KERNEL_SUPPORT' or ''}"
 
 LDFLAGS += " -lprivilege -lpthread -lstdc++"
 
@@ -56,7 +48,7 @@ do_compile_prepend () {
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'dhcp_manager', 'true', 'false', d)}; then
-        sed -i '2i <?define FEATURE_RDKB_DHCP_MANAGER=True?>' ${S}/config/${XML_NAME}
+        sed -i '2i <?define FEATURE_RDKB_DHCP_MANAGER=True?>' ${S}/config/RdkWanManager.xml
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
@@ -67,7 +59,7 @@ do_compile_prepend () {
     sed -i '2i <?define RBUS_BUILD_FLAG_ENABLE=True?>' ${S}/config/${XML_NAME}
     fi
 
-    if [ "${MAPT_FEATURE_ENABLED}" = "true" ]; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt', 'true', 'false', d)}; then
         sed -i '2i <?define FEATURE_MAPT=True?>' ${S}/config/${XML_NAME}
     fi
 
