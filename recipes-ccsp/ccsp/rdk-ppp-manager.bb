@@ -14,7 +14,7 @@ TAG_VERSION="1.2.0"
 # The GIT_TAG will be dynamically determined based on the TAG_VERSION.
 # The following code fetches the tag in the following priority order:
 # Example v2.7.0 -> RC2.7.0z -> RC2.7.0y -> ... -> RC2.7.0b -> RC2.7.0a
-GIT_TAG = "${@os.popen('git ls-remote --tags -q --sort=-version:refname git://github.com/rdkcentral/RdkPppManager.git ' + ' v' + d.getVar('TAG_VERSION', True) + ' RC' + d.getVar('TAG_VERSION', True) + '[a-z]').read().strip().split()[1].split('/')[-1]}"
+GIT_TAG = "${@os.popen('git ls-remote --tags -q --sort=-version:refname https://github.com/rdkcentral/RdkPppManager.git ' + ' v' + d.getVar('TAG_VERSION', True) + ' RC' + d.getVar('TAG_VERSION', True) + '[a-z]').read().strip().split()[1].split('/')[-1]}"
 
 SRC_URI := "git://github.com/rdkcentral/RdkPppManager.git;branch=main;protocol=https;name=PppManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
