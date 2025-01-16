@@ -8,10 +8,13 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-MY_TAG_VERSION="2.7.0"
-#GIT_TAG = "${@os.popen("git ls-remote --tags -q --sort=-version:refname https://github.com/rdkcentral/RdkWanManager.git v2.5.0 RC2.5.0[a-z]").read().strip().split()[1].split('/')[-1]}"
-GIT_TAG = "${@os.popen('git ls-remote --tags -q --sort=-version:refname https://github.com/rdkcentral/RdkWanManager.git ' + ' v' + d.getVar('MY_TAG_VERSION', True) + ' RC' + d.getVar('MY_TAG_VERSION', True) + '[a-z]').read().strip().split()[1].split('/')[-1]}"
+# Set the component version here
+TAG_VERSION="2.7.0"
 
+# The GIT_TAG will be dynamically determined based on the TAG_VERSION.
+# The following code fetches the tag in the following priority order:
+# Example v2.7.0 -> RC2.7.0z -> RC2.7.0y -> ... -> RC2.7.0b -> RC2.7.0a
+GIT_TAG = "${@os.popen('git ls-remote --tags -q --sort=-version:refname https://github.com/rdkcentral/RdkWanManager.git ' + ' v' + d.getVar('TAG_VERSION', True) + ' RC' + d.getVar('TAG_VERSION', True) + '[a-z]').read().strip().split()[1].split('/')[-1]}"
 
 SRC_URI := "git://github.com/rdkcentral/RdkWanManager.git;branch=main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
