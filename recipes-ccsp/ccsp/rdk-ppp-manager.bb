@@ -27,6 +27,7 @@ CFLAGS_append = " \
     -I${STAGING_INCDIR}/utctx \
     -Wall \
     -Werror \
+    -Wno-format \
     "
 
 LDFLAGS += " -lprivilege"
