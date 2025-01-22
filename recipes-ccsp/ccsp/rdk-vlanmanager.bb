@@ -7,9 +7,13 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia hal-platform libunpriv"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-GIT_TAG = "v1.3.0"
-SRC_URI = "git://github.com/rdkcentral/RdkVlanBridgingManager.git;branch=main;protocol=https;name=VlanBridgingManager;tag=${GIT_TAG}"
-PV = "${GIT_TAG}+git${SRCPV}"
+#GIT_TAG = "v1.3.0"
+#SRC_URI = "git://github.com/rdkcentral/RdkVlanBridgingManager.git;branch=main;protocol=https;name=VlanBridgingManager;tag=${GIT_TAG}"
+#PV = "${GIT_TAG}+git${SRCPV}"
+
+SRCREV = "${AUTOREV}"
+SRC_URI = "git://github.com/geoff-lu/RdkVlanBridgingManager.git;branch=RDKBDEV-2808;protocol=https;name=VlanBridgingManager"
+PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 
