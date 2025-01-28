@@ -25,6 +25,9 @@ CFLAGS_append = " \
     -I ${STAGING_INCDIR}/sysevent \
     -I${STAGING_INCDIR}/utapi \
     -I${STAGING_INCDIR}/utctx \
+    -Wall \
+    -Werror \
+    -Wno-format \
     "
 
 LDFLAGS += " -lprivilege"
