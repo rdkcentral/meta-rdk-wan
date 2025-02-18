@@ -11,7 +11,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 #PV = "${GIT_TAG}+git${SRCPV}"
 
 SRCREV = "${AUTOREV}"
-SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=main;protocol=https;name=xDSLManager"
+SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=SHARMAN-3315;protocol=https;name=xDSLManager"
 PV = "${RDK_RELEASE}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
