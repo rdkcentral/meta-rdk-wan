@@ -35,6 +35,8 @@ CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'ipoe_health_check', 
 CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', ' -DWAN_FAILOVER_SUPPORTED', '', d)}"
 PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
 
+CFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'bci', '-DCISCO_CONFIG_TRUE_STATIC_IP -DCISCO_CONFIG_DHCPV6_PREFIX_DELEGATION -DCONFIG_CISCO_TRUE_STATIC_IP -D_BCI_FEATURE_REQ', '', d)}"
+
 EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable', '--enable-wanunificationsupport', '', d)}"
 # Define a variable to consolidate the check for MAPT features based on DISTRO_FEATURES
 MAPT_FEATURE_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt','true', bb.utils.contains('DISTRO_FEATURES', 'unified_mapt', 'true', 'false', d), d)}"
