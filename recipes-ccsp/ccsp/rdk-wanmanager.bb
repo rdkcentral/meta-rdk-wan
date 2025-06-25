@@ -92,6 +92,11 @@ do_install_append () {
     ln -sf ${bindir}/wanmanager ${D}${exec_prefix}/rdk/wanmanager/wanmanager
     ln -sf ${bindir}/netmonitor ${D}${exec_prefix}/rdk/wanmanager/netmonitor
     install -m 644 ${S}/config/${XML_NAME} ${D}/usr/rdk/wanmanager/RdkWanManager.xml
+
+   if ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
+        install -d ${D}/etc
+        touch ${D}/etc/WFO_enabled
+   fi
 }
 
 
@@ -101,6 +106,8 @@ FILES_${PN} = " \
    ${exec_prefix}/rdk/wanmanager/RdkWanManager.xml \
    ${bindir}/* \
 "
+
+FILES_${PN} += " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', '/etc/WFO_enabled', '', d)} "
 
 FILES_${PN}-dbg = " \
     ${exec_prefix}/rdk/wanmanager/.debug \
