@@ -41,6 +41,9 @@ EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnifi
 # Define a variable to consolidate the check for MAPT features based on DISTRO_FEATURES
 MAPT_FEATURE_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt','true', bb.utils.contains('DISTRO_FEATURES', 'unified_mapt', 'true', 'false', d), d)}"
 
+# Flag for DHCPmanager conf
+EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dhcp_manager", " --enable-dhcp_manager=yes", " ",d)}"
+
 # Use the variable in CFLAGS_append
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
