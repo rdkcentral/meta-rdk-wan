@@ -7,7 +7,7 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia json-hal-lib avro-c hal-pl
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 GIT_TAG = "RC1.5.0a"
-SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
+SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=1.5.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
