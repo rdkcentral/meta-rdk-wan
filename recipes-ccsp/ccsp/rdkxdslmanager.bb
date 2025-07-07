@@ -8,11 +8,11 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
 #GIT_TAG = "RC1.5.0a"
-#SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=1.5.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
+#SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
 #PV = "${GIT_TAG}+git${SRCPV}"
 
 # Please use below part only for release verification/testing
-SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=1.5.0-main;protocol=https;name=xDSLManager;"
+SRC_URI = "git://github.com/rdkcentral/RdkXdslManager.git;branch=releases/1.5.0-main;protocol=https;name=xDSLManager;"
 SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
