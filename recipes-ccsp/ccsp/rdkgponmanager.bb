@@ -7,9 +7,15 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia hal-platform json-hal-lib"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
-GIT_TAG = "RC1.6.0a"
-SRC_URI = "git://github.com/rdkcentral/RdkGponManager.git;branch=main;protocol=https;name=GponManager;tag=${GIT_TAG}"
-PV = "${GIT_TAG}+git${SRCPV}"
+# Please use below part only for official release and release candidates
+#GIT_TAG = "RC1.6.0a"
+#SRC_URI = "git://github.com/rdkcentral/RdkGponManager.git;branch=main;protocol=https;name=GponManager;tag=${GIT_TAG}"
+#PV = "${GIT_TAG}+git${SRCPV}"
+
+# Please use below part only for release verification/testing
+SRC_URI = "git://github.com/rdkcentral/RdkGponManager.git;branch=releases/1.6.0-main;protocol=https;name=GponManager;"
+SRCREV = "${AUTOREV}"
+
 EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
 S = "${WORKDIR}/git"
