@@ -16,7 +16,7 @@ S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
 
-CFLAGS_append = " \
+CFLAGS:append = " \
     -I${STAGING_INCDIR} \
     -I${STAGING_INCDIR}/dbus-1.0 \
     -I${STAGING_LIBDIR}/dbus-1.0/include \
@@ -32,13 +32,13 @@ CFLAGS_append = " \
 
 LDFLAGS += " -lprivilege"
 
-CFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'safec', ' -fPIC -I${STAGING_INCDIR}/libsafec', '-fPIC', d)}"
-LDFLAGS_append = " -ldbus-1"
-LDFLAGS_remove_morty = " -ldbus-1"
+CFLAGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'safec', ' -fPIC -I${STAGING_INCDIR}/libsafec', '-fPIC', d)}"
+LDFLAGS:append = " -ldbus-1"
+LDFLAGS:remove_morty = " -ldbus-1"
 
-EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
+EXTRA_OECONF:append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
-do_install_append () {
+do_install:append () {
     # Config files and scripts
     install -d ${D}${exec_prefix}/rdk/pppmanager
     ln -sf ${bindir}/pppmanager ${D}${exec_prefix}/rdk/pppmanager/pppmanager

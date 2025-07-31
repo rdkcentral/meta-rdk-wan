@@ -15,7 +15,7 @@ S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
 
-CFLAGS_append = " \
+CFLAGS:append = " \
     -I${STAGING_INCDIR} \
     -I${STAGING_INCDIR}/dbus-1.0 \
     -I${STAGING_LIBDIR}/dbus-1.0/include \
@@ -29,13 +29,13 @@ CFLAGS_append = " \
 
 LDFLAGS += " -lprivilege"
 
-CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 
-do_compile_prepend () {
+do_compile:prepend () {
     (${PYTHON} ${STAGING_BINDIR_NATIVE}/dm_pack_code_gen.py ${S}/config/RdkVlanManager.xml ${S}/source/RdkVlanManager/dm_pack_datamodel.c)
 }
 
-do_install_append () {
+do_install:append () {
     # Config files and scripts
     install -d ${D}/usr/rdk
     install -d ${D}/usr/rdk/vlanmanager

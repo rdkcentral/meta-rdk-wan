@@ -14,14 +14,14 @@ S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
 
-CFLAGS_append = " \
+CFLAGS:append = " \
     -I${STAGING_INCDIR} \
     -I${STAGING_INCDIR}/ccsp \
     -I ${STAGING_INCDIR}/syscfg \
     -I ${STAGING_INCDIR}/sysevent \
     "
 
-CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt', '-DFEATURE_MAPT', '', d)}"
+CFLAGS:append += " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt', '-DFEATURE_MAPT', '', d)}"
 
 FILES_${PN} = " \
    ${bindir}/ipoe_health_check \
