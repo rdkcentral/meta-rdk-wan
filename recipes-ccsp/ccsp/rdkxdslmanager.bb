@@ -14,7 +14,7 @@ S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
 
-CFLAGS_append = " \
+CFLAGS:append = " \
     -I${STAGING_INCDIR} \
     -I${STAGING_INCDIR}/dbus-1.0 \
     -I${STAGING_LIBDIR}/dbus-1.0/include \
@@ -24,23 +24,23 @@ CFLAGS_append = " \
     -I${STAGING_INCDIR}/libparodus \
     "
 
-DEPENDS_append = "${@bb.utils.contains("DISTRO_FEATURES", "seshat", " libseshat ", " ", d)}"
-CFLAGS_append = "${@bb.utils.contains("DISTRO_FEATURES", "seshat", " -DENABLE_SESHAT ", " ", d)}"
-LDFLAGS_append = "${@bb.utils.contains("DISTRO_FEATURES", "seshat", " -llibseshat ", " ", d)}"
+DEPENDS:append = "${@bb.utils.contains("DISTRO_FEATURES", "seshat", " libseshat ", " ", d)}"
+CFLAGS:append = "${@bb.utils.contains("DISTRO_FEATURES", "seshat", " -DENABLE_SESHAT ", " ", d)}"
+LDFLAGS:append = "${@bb.utils.contains("DISTRO_FEATURES", "seshat", " -llibseshat ", " ", d)}"
 
-EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '--enable-gtestapp', '', d)}"
-EXTRA_OECONF_append  = " ${@bb.utils.contains_any('DISTRO_FEATURES','kirkstone scarthgap','','--with-ccsp-platform=bcm --with-ccsp-arch=arm',d)} "
+EXTRA_OECONF:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '--enable-gtestapp', '', d)}"
+EXTRA_OECONF:append  = " ${@bb.utils.contains_any('DISTRO_FEATURES','kirkstone scarthgap','','--with-ccsp-platform=bcm --with-ccsp-arch=arm',d)} "
 
 LDFLAGS += " -lprivilege"
 
-CFLAGS_append = "\
+CFLAGS:append = "\
     ${@bb.utils.contains("DISTRO_FEATURES", "seshat", "-I${STAGING_INCDIR}/libseshat ", " ", d)} \
 "
-CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
-LDFLAGS_append = " -lrt -lm"
-LDFLAGS_remove_morty = " -lrt -lm"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
+LDFLAGS:append = " -lrt -lm"
+LDFLAGS:remove_morty = " -lrt -lm"
 
-do_install_append () {
+do_install:append () {
     # Config files and scripts
     install -d ${D}/usr/rdk/xdslmanager
     install -d ${D}${bindir}

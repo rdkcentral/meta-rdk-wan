@@ -10,7 +10,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 GIT_TAG = "RC1.5.0a"
 SRC_URI = "git://github.com/rdkcentral/RdkGponManager.git;branch=main;protocol=https;name=GponManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
-EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
+EXTRA_OECONF:append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -21,7 +21,7 @@ export ISRDKB_WAN_UNIFICATION_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES',
 export SCHEMA_FILE = "${@bb.utils.contains('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','gpon_wan_unify_hal_schema.json','gpon_hal_schema.json', d)}"
 export CONF_FILE = "${@bb.utils.contains('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','gpon_manager_wan_unify_conf.json','gpon_manager_conf.json', d)}"
 
-CFLAGS_append = " \
+CFLAGS:append = " \
     -I${STAGING_INCDIR} \
     -I${STAGING_INCDIR}/dbus-1.0 \
     -I${STAGING_LIBDIR}/dbus-1.0/include \
@@ -32,9 +32,9 @@ CFLAGS_append = " \
     -Wall \
     -Wno-error=switch \
     "
-CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 
-do_compile_prepend () {
+do_compile:prepend () {
     (${PYTHON} ${STAGING_BINDIR_NATIVE}/dm_pack_code_gen.py ${S}/config/RdkGponManager.xml ${S}/source/GponManager/dm_pack_datamodel.c)
 }
 
