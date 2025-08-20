@@ -54,6 +54,10 @@ CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' o
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DNAT46_KERNEL_SUPPORT' or ''}"
 
+DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
+CFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', '-DENABLE_FEATURE_TELEMETRY2_0', '', d)} "
+LDFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', ' -ltelemetry_msgsender ', '', d)} "
+
 LDFLAGS += " -lprivilege -lpthread -lstdc++"
 
 do_compile_prepend () {
