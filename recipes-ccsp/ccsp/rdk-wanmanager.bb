@@ -9,12 +9,12 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-#GIT_TAG = "RC2.11.0a"
-#SRC_URI := "git://github.com/rdkcentral/RdkWanManager.git;branch=main;protocol=https;name=WanManager;tag=${GIT_TAG}"
+#GIT_TAG = "v2.11.0"
+#SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.11.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 #PV = "${GIT_TAG}+git${SRCPV}"
 
 # Please use below part only for release verification/testing
-SRC_URI := "git://github.com/rdkcentral/RdkWanManager.git;branch=releases/2.11.0-main;protocol=https;name=WanManager;"
+SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.12.0-main;protocol=https;name=WanManager;"
 SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
@@ -54,6 +54,10 @@ EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dhcp_manager", " --ena
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DNAT46_KERNEL_SUPPORT' or ''}"
+
+DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
+CFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', '-DENABLE_FEATURE_TELEMETRY2_0', '', d)} "
+LDFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', ' -ltelemetry_msgsender ', '', d)} "
 
 LDFLAGS += " -lprivilege -lpthread -lstdc++"
 
