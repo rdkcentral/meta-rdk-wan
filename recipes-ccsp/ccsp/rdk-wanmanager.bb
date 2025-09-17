@@ -14,7 +14,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 #PV = "${GIT_TAG}+git${SRCPV}"
 
 # Please use below part only for release verification/testing
-SRC_URI := "git://github.com/Krithiksha11/wan-manager.git;branch=RDKBNETWOR-66_MAPE;protocol=https;name=WanManager;"
+SRC_URI := "git://github.com/Krithiksha11/RdkWanManager.git;branch=RDKBNETWOR-66_MAPE;protocol=https;name=WanManager;"
 SRCREV = "17f486c968d94d2cb0eecd8071c5b9c668d4a4ac"
 
 S = "${WORKDIR}/git"
