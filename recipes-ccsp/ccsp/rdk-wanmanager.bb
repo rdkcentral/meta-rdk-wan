@@ -85,20 +85,20 @@ do_install:append () {
 }
 
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${exec_prefix}/rdk/wanmanager/wanmanager \
    ${exec_prefix}/rdk/wanmanager/netmonitor \
    ${exec_prefix}/rdk/wanmanager/RdkWanManager.xml \
    ${bindir}/* \
 "
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${exec_prefix}/rdk/wanmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \
     ${libdir}/.debug \
 "
-FILES_${PN}-gtest = "\
+FILES:${PN}-gtest = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${bindir}/RdkWanManager_gtest.bin', '', d)} \
 "
 EXTRA_OECONF:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '--enable-gtestapp', '', d)}"

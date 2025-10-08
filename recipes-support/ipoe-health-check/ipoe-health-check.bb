@@ -23,6 +23,6 @@ CFLAGS:append = " \
 
 CFLAGS:append += " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt', '-DFEATURE_MAPT', '', d)}"
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${bindir}/ipoe_health_check \
 "
