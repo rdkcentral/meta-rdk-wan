@@ -52,7 +52,7 @@ do_install () {
     install -m 644 ${S}/hal_schema/${SCHEMA_FILE} ${D}${sysconfdir}/rdk/schemas
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${bindir}/GponManager \
    ${prefix}/rdk/gponmanager/RdkGponManager.xml \
    ${sysconfdir}/rdk/conf \
@@ -61,7 +61,7 @@ FILES_${PN} = " \
    ${sysconfdir}/rdk/schemas/${SCHEMA_FILE} \
 "
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${prefix}/rdk/gponmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \

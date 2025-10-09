@@ -49,14 +49,14 @@ do_install:append () {
     install -m 644 ${S}/hal_schema/ethlinkvlanterm_hal_schema.json ${D}/${sysconfdir}/rdk/schemas
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${bindir}/VlanManager \
    ${prefix}/rdk/vlanmanager/RdkVlanManager.xml \
    ${sysconfdir}/rdk/conf/vlan_manager_conf.json \
    ${sysconfdir}/rdk/schemas/ethlinkvlanterm_hal_schema.json \
 "
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${prefix}/rdk/vlanmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \

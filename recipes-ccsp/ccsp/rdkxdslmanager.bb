@@ -57,11 +57,11 @@ do_install:append () {
 
 PACKAGES =+ "${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
 
-FILES_${PN}-gtest = "\
+FILES:${PN}-gtest = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${bindir}/RdkXdslManager_gtest.bin', '', d)} \
 "
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${libdir}/systemd \
    ${bindir}/xdslmanager \
    ${exec_prefix}/ccsp/harvester/XdslReport.avsc \
@@ -70,7 +70,7 @@ FILES_${PN} = " \
    ${sysconfdir}/rdk/schemas/xdsl_hal_schema.json \
 "
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${prefix}/rdk/xdslmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \

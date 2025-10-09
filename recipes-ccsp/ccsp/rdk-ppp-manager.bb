@@ -47,13 +47,13 @@ do_install:append () {
 }
 
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${exec_prefix}/rdk/pppmanager/pppmanager \
    ${exec_prefix}/rdk/pppmanager/RdkPppManager.xml \
    ${bindir}/* \
 "
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${exec_prefix}/ccsp/pppmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \
