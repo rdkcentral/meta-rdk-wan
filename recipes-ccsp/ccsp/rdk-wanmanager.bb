@@ -14,8 +14,8 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 #PV = "${GIT_TAG}+git${SRCPV}"
 
 # Please use below part only for release verification/testing
-SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.12.0-main;protocol=https;name=WanManager;"
-SRCREV = "${AUTOREV}"
+SRC_URI := "git://github.com/Krithiksha11/RdkWanManager.git;branch=RDKBNETWOR-66_MAPE;protocol=https;name=WanManager;"
+SRCREV = "d8a27534dbb7f9450b323c11617052ef1126d7c6"
 
 S = "${WORKDIR}/git"
 
@@ -36,6 +36,7 @@ CFLAGS_append = " \
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 LDFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-lnanomsg', '', d)}"
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', '-DRBUS_BUILD_FLAG_ENABLE', '', d)}"
+CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mape', '-DFEATURE_MAPE', '', d)}"
 CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'ipoe_health_check', '-DFEATURE_IPOE_HEALTH_CHECK', '', d)}"
 CFLAGS_append += " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', ' -DWAN_FAILOVER_SUPPORTED', '', d)}"
 PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
