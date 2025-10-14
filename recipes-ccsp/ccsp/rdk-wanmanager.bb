@@ -15,7 +15,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for release verification/testing
 SRC_URI := "git://github.com/Krithiksha11/RdkWanManager.git;branch=RDKBNETWOR-66_MAPE;protocol=https;name=WanManager;"
-SRCREV = "70b79065798da88c5d82ff3ca8aad41b67d2bf51"
+SRCREV = "d8a27534dbb7f9450b323c11617052ef1126d7c6"
 
 S = "${WORKDIR}/git"
 
