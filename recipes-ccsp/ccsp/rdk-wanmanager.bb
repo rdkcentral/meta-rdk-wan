@@ -13,10 +13,6 @@ GIT_TAG = "v2.11.0"
 SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.11.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
-# Please use below part only for release verification/testing
-#SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.12.0-main;protocol=https;name=WanManager;"
-#SRCREV = "${AUTOREV}"
-
 S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig ${@bb.utils.contains("DISTRO_FEATURES", "kirkstone", "python3native", "pythonnative", d)}

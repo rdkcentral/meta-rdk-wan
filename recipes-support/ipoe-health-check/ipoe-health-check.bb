@@ -11,10 +11,6 @@ GIT_TAG = "v1.3.0"
 SRC_URI := "git://github.com/rdkcentral/ipoe-health-check.git;branch=releases/1.3.0-main;protocol=https;name=IPoEHealthCheck;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
-# Please use below part only for release verification/testing
-#SRC_URI = "git://github.com/rdkcentral/ipoe-health-check.git;branch=releases/1.4.0-main;protocol=https;name=IPoEHealthCheck;"
-#SRCREV = "${AUTOREV}"
-
 S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig

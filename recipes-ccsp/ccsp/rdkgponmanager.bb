@@ -12,10 +12,6 @@ GIT_TAG = "v1.6.0"
 SRC_URI = "git://github.com/rdkcentral/gpon-manager.git;branch=releases/1.6.0-main;protocol=https;name=GponManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
-# Please use below part only for release verification/testing
-#SRC_URI = "git://github.com/rdkcentral/gpon-manager.git;branch=releases/1.7.0-main;protocol=https;name=GponManager;"
-#SRCREV = "${AUTOREV}"
-
 EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
 S = "${WORKDIR}/git"
