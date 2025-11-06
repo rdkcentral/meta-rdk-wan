@@ -1,0 +1,377 @@
+name: Update Version Tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: 'Source branch to create PR from'
+        required: true
+        default: 'main'
+        type: string
+      ppp_manager_tag:
+        description: 'PPP Manager version tag (e.g., v1.5.0)'
+        required: false
+        type: string
+      vlan_manager_tag:
+        description: 'VLAN Manager version tag (e.g., v1.5.0)'
+        required: false
+        type: string
+      wan_manager_tag:
+        description: 'WAN Manager version tag (e.g., v2.11.0)'
+        required: false
+        type: string
+      gpon_manager_tag:
+        description: 'GPON Manager version tag (e.g., v1.5.0)'
+        required: false
+        type: string
+      xdsl_manager_tag:
+        description: 'xDSL Manager version tag (e.g., v1.5.0)'
+        required: false
+        type: string
+      ipoe_health_check_tag:
+        description: 'IPoE Health Check version tag (e.g., v1.3.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Validate inputs
+        run: |
+          echo "Validating workflow inputs..."
+          
+          # Function to validate tag format
+          validate_tag() {
+            local tag=$1
+            local component=$2
+            
+            if [ -n "$tag" ]; then
+              if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "❌ Invalid tag format for $component: $tag (expected format: vX.Y.Z)"
+                exit 1
+              else
+                echo "✅ Valid tag format for $component: $tag"
+              fi
+            fi
+          }
+          
+          # Validate all provided tags
+          validate_tag "${{ inputs.ppp_manager_tag }}" "PPP Manager"
+          validate_tag "${{ inputs.vlan_manager_tag }}" "VLAN Manager"
+          validate_tag "${{ inputs.wan_manager_tag }}" "WAN Manager"
+          validate_tag "${{ inputs.gpon_manager_tag }}" "GPON Manager"
+          validate_tag "${{ inputs.xdsl_manager_tag }}" "xDSL Manager"
+          validate_tag "${{ inputs.ipoe_health_check_tag }}" "IPoE Health Check"
+          
+          # Check if at least one tag is provided
+          if [ -z "${{ inputs.ppp_manager_tag }}${{ inputs.vlan_manager_tag }}${{ inputs.wan_manager_tag }}${{ inputs.gpon_manager_tag }}${{ inputs.xdsl_manager_tag }}${{ inputs.ipoe_health_check_tag }}" ]; then
+            echo "❌ No version tags provided. Please specify at least one component to update."
+            exit 1
+          fi
+          
+          echo "✅ All inputs validated successfully"
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create update branch
+        id: branch
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          BRANCH_NAME="update-tags-$TIMESTAMP"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Setup scripts
+        run: |
+          # Make Python script executable
+          chmod +x .github/scripts/update_component.py
+          
+          # Verify Python is available and test the script
+          python3 --version
+          python3 .github/scripts/update_component.py --help > /dev/null
+
+      - name: Update Components
+        run: |
+          # Create a list of components to update
+          COMPONENTS_TO_UPDATE=""
+          
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            echo "🔄 Updating PPP Manager with tag ${{ inputs.ppp_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.ppp_manager_tag }}" \
+              "ppp-manager" \
+              "recipes-ccsp/ccsp/rdk-ppp-manager.bb" \
+              "PPPManager"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE PPP-Manager:${{ inputs.ppp_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            echo "🔄 Updating VLAN Manager with tag ${{ inputs.vlan_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.vlan_manager_tag }}" \
+              "vlan-manager" \
+              "recipes-ccsp/ccsp/rdk-vlanmanager.bb" \
+              "VLANManager"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE VLAN-Manager:${{ inputs.vlan_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            echo "🔄 Updating WAN Manager with tag ${{ inputs.wan_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.wan_manager_tag }}" \
+              "wan-manager" \
+              "recipes-ccsp/ccsp/rdk-wanmanager.bb" \
+              "WanManager"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE WAN-Manager:${{ inputs.wan_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            echo "🔄 Updating GPON Manager with tag ${{ inputs.gpon_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.gpon_manager_tag }}" \
+              "gpon-manager" \
+              "recipes-ccsp/ccsp/rdkgponmanager.bb" \
+              "GPONManager"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE GPON-Manager:${{ inputs.gpon_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            echo "🔄 Updating xDSL Manager with tag ${{ inputs.xdsl_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.xdsl_manager_tag }}" \
+              "xdsl-manager" \
+              "recipes-ccsp/ccsp/rdkxdslmanager.bb" \
+              "xDSLManager"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE xDSL-Manager:${{ inputs.xdsl_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            echo "🔄 Updating IPoE Health Check with tag ${{ inputs.ipoe_health_check_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.ipoe_health_check_tag }}" \
+              "ipoe-health-check" \
+              "recipes-support/ipoe-health-check/ipoe-health-check.bb" \
+              "IPoEHealthCheck"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE IPoE-Health-Check:${{ inputs.ipoe_health_check_tag }}"
+          fi
+          
+          # Save the list of updated components for later steps
+          echo "UPDATED_COMPONENTS=$COMPONENTS_TO_UPDATE" >> $GITHUB_ENV
+          
+          if [ -z "$COMPONENTS_TO_UPDATE" ]; then
+            echo "❌ No components to update. No tags were provided."
+            exit 1
+          else
+            echo "✅ Updated components:$COMPONENTS_TO_UPDATE"
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Function to get changelog between tags for a repo
+          get_repo_changelog() {
+            local repo=$1
+            local new_tag=$2
+            local repo_name=$3
+            
+            echo "## $repo_name"
+            echo ""
+            
+            # Get the previous tag from the corresponding bb file
+            case "$repo" in
+              "ppp-manager") BB_FILE="recipes-ccsp/ccsp/rdk-ppp-manager.bb" ;;
+              "vlan-manager") BB_FILE="recipes-ccsp/ccsp/rdk-vlanmanager.bb" ;;
+              "wan-manager") BB_FILE="recipes-ccsp/ccsp/rdk-wanmanager.bb" ;;
+              "gpon-manager") BB_FILE="recipes-ccsp/ccsp/rdkgponmanager.bb" ;;
+              "xdsl-manager") BB_FILE="recipes-ccsp/ccsp/rdkxdslmanager.bb" ;;
+              "ipoe-health-check") BB_FILE="recipes-support/ipoe-health-check/ipoe-health-check.bb" ;;
+            esac
+            
+            # Try to extract previous tag from bb file
+            if [ -f "$BB_FILE" ]; then
+              PREV_TAG=$(grep "^#GIT_TAG" "$BB_FILE" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1)
+              if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$new_tag" ]; then
+                echo "**Previous version:** $PREV_TAG"
+                echo "**New version:** $new_tag"
+                echo ""
+                echo "For detailed changes, see: https://github.com/rdkcentral/$repo/compare/$PREV_TAG...$new_tag"
+                echo ""
+              else
+                echo "**New version:** $new_tag"
+                echo ""
+                echo "See release notes: https://github.com/rdkcentral/$repo/releases/tag/$new_tag"
+                echo ""
+              fi
+            fi
+          }
+          
+          # Generate changelog only for updated components
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            get_repo_changelog "ppp-manager" "${{ inputs.ppp_manager_tag }}" "PPP Manager"
+          fi
+          
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            get_repo_changelog "vlan-manager" "${{ inputs.vlan_manager_tag }}" "VLAN Manager"
+          fi
+          
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            get_repo_changelog "wan-manager" "${{ inputs.wan_manager_tag }}" "WAN Manager"
+          fi
+          
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            get_repo_changelog "gpon-manager" "${{ inputs.gpon_manager_tag }}" "GPON Manager"
+          fi
+          
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            get_repo_changelog "xdsl-manager" "${{ inputs.xdsl_manager_tag }}" "xDSL Manager"
+          fi
+          
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            get_repo_changelog "ipoe-health-check" "${{ inputs.ipoe_health_check_tag }}" "IPoE Health Check"
+          fi
+
+      - name: Commit changes
+        id: commit
+        run: |
+          # Check if there are any changes
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes detected. All specified tags may already be current."
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Show what files will be changed
+          echo "Files to be updated:"
+          git diff --name-only
+          
+          # Create commit message
+          COMMIT_MSG="Update component version tags"
+          
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            COMMIT_MSG="$COMMIT_MSG\n\n- PPP Manager: ${{ inputs.ppp_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            COMMIT_MSG="$COMMIT_MSG\n- VLAN Manager: ${{ inputs.vlan_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            COMMIT_MSG="$COMMIT_MSG\n- WAN Manager: ${{ inputs.wan_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            COMMIT_MSG="$COMMIT_MSG\n- GPON Manager: ${{ inputs.gpon_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            COMMIT_MSG="$COMMIT_MSG\n- xDSL Manager: ${{ inputs.xdsl_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            COMMIT_MSG="$COMMIT_MSG\n- IPoE Health Check: ${{ inputs.ipoe_health_check_tag }}"
+          fi
+          
+          git add .
+          echo -e "$COMMIT_MSG" | git commit -F -
+          echo "has-changes=true" >> $GITHUB_OUTPUT
+
+      - name: Push branch
+        if: steps.commit.outputs.has-changes == 'true'
+        run: |
+          git push origin ${{ steps.branch.outputs.branch-name }}
+
+      - name: Create Pull Request
+        if: steps.commit.outputs.has-changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prTitle = 'Update Component Version Tags';
+            
+            let prBody = '## Component Version Updates\n\n';
+            prBody += 'This PR updates the version tags for the following components:\n\n';
+            
+            const inputs = context.payload.inputs;
+            
+            if (inputs.ppp_manager_tag) {
+              prBody += `- **PPP Manager**: ${inputs.ppp_manager_tag}\n`;
+            }
+            if (inputs.vlan_manager_tag) {
+              prBody += `- **VLAN Manager**: ${inputs.vlan_manager_tag}\n`;
+            }
+            if (inputs.wan_manager_tag) {
+              prBody += `- **WAN Manager**: ${inputs.wan_manager_tag}\n`;
+            }
+            if (inputs.gpon_manager_tag) {
+              prBody += `- **GPON Manager**: ${inputs.gpon_manager_tag}\n`;
+            }
+            if (inputs.xdsl_manager_tag) {
+              prBody += `- **xDSL Manager**: ${inputs.xdsl_manager_tag}\n`;
+            }
+            if (inputs.ipoe_health_check_tag) {
+              prBody += `- **IPoE Health Check**: ${inputs.ipoe_health_check_tag}\n`;
+            }
+            
+            prBody += '\n## Changes Made\n\n';
+            prBody += 'Updated the commented GIT_TAG and SRC_URI lines in the respective BitBake (.bb) files to reference the new version tags and corresponding release branches.\n\n';
+            prBody += '## Testing\n\n';
+            prBody += 'Please verify that:\n';
+            prBody += '- [ ] All updated tags exist in their respective repositories\n';
+            prBody += '- [ ] The branch references are correct\n';
+            prBody += '- [ ] The BitBake recipes build successfully\n\n';
+            prBody += '---\n';
+            prBody += '*This PR was automatically generated by the Update Version Tags workflow.*';
+            
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: prTitle,
+              head: '${{ steps.branch.outputs.branch-name }}',
+              base: '${{ inputs.source_branch }}',
+              body: prBody,
+              draft: false
+            });
+            
+            console.log(`Created PR #${pr.number}: ${pr.html_url}`);
+
+      - name: No changes summary
+        if: steps.commit.outputs.has-changes == 'false'
+        run: |
+          echo "## Summary: No Changes Required"
+          echo ""
+          echo "All specified version tags are already current in the BitBake recipes."
+          echo "No pull request was created."
+          echo ""
+          echo "### Specified Tags:"
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            echo "- PPP Manager: ${{ inputs.ppp_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            echo "- VLAN Manager: ${{ inputs.vlan_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            echo "- WAN Manager: ${{ inputs.wan_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            echo "- GPON Manager: ${{ inputs.gpon_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            echo "- xDSL Manager: ${{ inputs.xdsl_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            echo "- IPoE Health Check: ${{ inputs.ipoe_health_check_tag }}"
+          fi
