@@ -7,13 +7,13 @@ DEPENDS = "ccsp-common-library dbus rdk-logger utopia json-hal-lib avro-c hal-pl
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-#GIT_TAG = "v1.5.0"
-#SRC_URI = "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.5.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
-#PV = "${GIT_TAG}+git${SRCPV}"
+GIT_TAG = "v1.6.0"
+SRC_URI = "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.6.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
+PV = "${GIT_TAG}+git${SRCPV}"
 
 # Please use below part only for release verification/testing
-SRC_URI = "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.6.0-main;protocol=https;name=xDSLManager;"
-SRCREV = "${AUTOREV}"
+#SRC_URI = "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.6.0-main;protocol=https;name=xDSLManager;"
+#SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 
