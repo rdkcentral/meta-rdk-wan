@@ -9,27 +9,27 @@ on:
         default: 'main'
         type: string
       ppp_manager_tag:
-        description: 'PPP Manager version tag (e.g., v1.5.0)'
+        description: 'PPP Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
         required: false
         type: string
       vlan_manager_tag:
-        description: 'VLAN Manager version tag (e.g., v1.5.0)'
+        description: 'VLAN Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
         required: false
         type: string
       wan_manager_tag:
-        description: 'WAN Manager version tag (e.g., v2.11.0)'
+        description: 'WAN Manager version tag (e.g., v2.11.0) or release branch (e.g., releases/2.11.0-main)'
         required: false
         type: string
       gpon_manager_tag:
-        description: 'GPON Manager version tag (e.g., v1.5.0)'
+        description: 'GPON Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
         required: false
         type: string
       xdsl_manager_tag:
-        description: 'xDSL Manager version tag (e.g., v1.5.0)'
+        description: 'xDSL Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
         required: false
         type: string
       ipoe_health_check_tag:
-        description: 'IPoE Health Check version tag (e.g., v1.3.0)'
+        description: 'IPoE Health Check version tag (e.g., v1.3.0) or release branch (e.g., releases/1.3.0-main)'
         required: false
         type: string
 
@@ -52,32 +52,39 @@ jobs:
         run: |
           echo "Validating workflow inputs..."
           
-          # Function to validate tag format
-          validate_tag() {
-            local tag=$1
+          # Function to validate tag or branch format
+          validate_input() {
+            local input=$1
             local component=$2
             
-            if [ -n "$tag" ]; then
-              if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                echo "❌ Invalid tag format for $component: $tag (expected format: vX.Y.Z)"
-                exit 1
+            if [ -n "$input" ]; then
+              # Check if it's a version tag (vX.Y.Z)
+              if [[ "$input" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "✅ Valid version tag for $component: $input"
+              # Check if it's a release branch (releases/X.Y.Z-main)
+              elif [[ "$input" =~ ^releases/[0-9]+\.[0-9]+\.[0-9]+-main$ ]]; then
+                echo "✅ Valid release branch for $component: $input"
               else
-                echo "✅ Valid tag format for $component: $tag"
+                echo "❌ Invalid format for $component: $input"
+                echo "   Expected formats:"
+                echo "   - Version tag: v1.3.0"
+                echo "   - Release branch: releases/1.3.0-main"
+                exit 1
               fi
             fi
           }
           
-          # Validate all provided tags
-          validate_tag "${{ inputs.ppp_manager_tag }}" "PPP Manager"
-          validate_tag "${{ inputs.vlan_manager_tag }}" "VLAN Manager"
-          validate_tag "${{ inputs.wan_manager_tag }}" "WAN Manager"
-          validate_tag "${{ inputs.gpon_manager_tag }}" "GPON Manager"
-          validate_tag "${{ inputs.xdsl_manager_tag }}" "xDSL Manager"
-          validate_tag "${{ inputs.ipoe_health_check_tag }}" "IPoE Health Check"
+          # Validate all provided inputs
+          validate_input "${{ inputs.ppp_manager_tag }}" "PPP Manager"
+          validate_input "${{ inputs.vlan_manager_tag }}" "VLAN Manager"
+          validate_input "${{ inputs.wan_manager_tag }}" "WAN Manager"
+          validate_input "${{ inputs.gpon_manager_tag }}" "GPON Manager"
+          validate_input "${{ inputs.xdsl_manager_tag }}" "xDSL Manager"
+          validate_input "${{ inputs.ipoe_health_check_tag }}" "IPoE Health Check"
           
-          # Check if at least one tag is provided
+          # Check if at least one input is provided
           if [ -z "${{ inputs.ppp_manager_tag }}${{ inputs.vlan_manager_tag }}${{ inputs.wan_manager_tag }}${{ inputs.gpon_manager_tag }}${{ inputs.xdsl_manager_tag }}${{ inputs.ipoe_health_check_tag }}" ]; then
-            echo "❌ No version tags provided. Please specify at least one component to update."
+            echo "❌ No version tags or branches provided. Please specify at least one component to update."
             exit 1
           fi
           
@@ -221,55 +228,48 @@ jobs:
           echo "Files to be updated:"
           git diff --name-only
           
-          # Create commit message with version diffs
+          # Helper function to format component message
+          format_component_message() {
+            local component=$1
+            local input=$2
+            local prev_value=$3
+            
+            # If input is a branch (releases/X.Y.Z-main), don't show diff
+            if [[ "$input" =~ ^releases/ ]]; then
+              echo "- $component: $input (branch)"
+            # If input is a version tag, show diff if available
+            elif [ -n "$prev_value" ] && [ "$prev_value" != "$input" ]; then
+              echo "- $component: $prev_value → $input"
+            else
+              echo "- $component: $input"
+            fi
+          }
+          
+          # Create commit message
           COMMIT_MSG="Update component version tags"
           
           if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
-            if [ -n "$PREV_PPP_MANAGER" ] && [ "$PREV_PPP_MANAGER" != "${{ inputs.ppp_manager_tag }}" ]; then
-              COMMIT_MSG="$COMMIT_MSG\n\n- PPP Manager: $PREV_PPP_MANAGER → ${{ inputs.ppp_manager_tag }}"
-            else
-              COMMIT_MSG="$COMMIT_MSG\n\n- PPP Manager: ${{ inputs.ppp_manager_tag }}"
-            fi
+            COMMIT_MSG="$COMMIT_MSG\n\n$(format_component_message "PPP Manager" "${{ inputs.ppp_manager_tag }}" "$PREV_PPP_MANAGER")"
           fi
           
           if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
-            if [ -n "$PREV_VLAN_MANAGER" ] && [ "$PREV_VLAN_MANAGER" != "${{ inputs.vlan_manager_tag }}" ]; then
-              COMMIT_MSG="$COMMIT_MSG\n- VLAN Manager: $PREV_VLAN_MANAGER → ${{ inputs.vlan_manager_tag }}"
-            else
-              COMMIT_MSG="$COMMIT_MSG\n- VLAN Manager: ${{ inputs.vlan_manager_tag }}"
-            fi
+            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "VLAN Manager" "${{ inputs.vlan_manager_tag }}" "$PREV_VLAN_MANAGER")"
           fi
           
           if [ -n "${{ inputs.wan_manager_tag }}" ]; then
-            if [ -n "$PREV_WAN_MANAGER" ] && [ "$PREV_WAN_MANAGER" != "${{ inputs.wan_manager_tag }}" ]; then
-              COMMIT_MSG="$COMMIT_MSG\n- WAN Manager: $PREV_WAN_MANAGER → ${{ inputs.wan_manager_tag }}"
-            else
-              COMMIT_MSG="$COMMIT_MSG\n- WAN Manager: ${{ inputs.wan_manager_tag }}"
-            fi
+            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "WAN Manager" "${{ inputs.wan_manager_tag }}" "$PREV_WAN_MANAGER")"
           fi
           
           if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
-            if [ -n "$PREV_GPON_MANAGER" ] && [ "$PREV_GPON_MANAGER" != "${{ inputs.gpon_manager_tag }}" ]; then
-              COMMIT_MSG="$COMMIT_MSG\n- GPON Manager: $PREV_GPON_MANAGER → ${{ inputs.gpon_manager_tag }}"
-            else
-              COMMIT_MSG="$COMMIT_MSG\n- GPON Manager: ${{ inputs.gpon_manager_tag }}"
-            fi
+            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "GPON Manager" "${{ inputs.gpon_manager_tag }}" "$PREV_GPON_MANAGER")"
           fi
           
           if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
-            if [ -n "$PREV_XDSL_MANAGER" ] && [ "$PREV_XDSL_MANAGER" != "${{ inputs.xdsl_manager_tag }}" ]; then
-              COMMIT_MSG="$COMMIT_MSG\n- xDSL Manager: $PREV_XDSL_MANAGER → ${{ inputs.xdsl_manager_tag }}"
-            else
-              COMMIT_MSG="$COMMIT_MSG\n- xDSL Manager: ${{ inputs.xdsl_manager_tag }}"
-            fi
+            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "xDSL Manager" "${{ inputs.xdsl_manager_tag }}" "$PREV_XDSL_MANAGER")"
           fi
           
           if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
-            if [ -n "$PREV_IPOE_HC" ] && [ "$PREV_IPOE_HC" != "${{ inputs.ipoe_health_check_tag }}" ]; then
-              COMMIT_MSG="$COMMIT_MSG\n- IPoE Health Check: $PREV_IPOE_HC → ${{ inputs.ipoe_health_check_tag }}"
-            else
-              COMMIT_MSG="$COMMIT_MSG\n- IPoE Health Check: ${{ inputs.ipoe_health_check_tag }}"
-            fi
+            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "IPoE Health Check" "${{ inputs.ipoe_health_check_tag }}" "$PREV_IPOE_HC")"
           fi
           
           git add .
@@ -301,23 +301,37 @@ jobs:
             };
             
             // Helper function to generate component changelog
-            function generateComponentSection(componentName, newTag, prevTag, repoName) {
-              if (!newTag) return '';
+            function generateComponentSection(componentName, newInput, prevTag, repoName) {
+              if (!newInput) return '';
               
               let section = `### 📦 ${componentName}\n\n`;
               
-              if (prevTag && prevTag !== newTag) {
-                section += `**Version Change:** \`${prevTag}\` → \`${newTag}\`\n\n`;
+              // Check if input is a release branch
+              const isBranch = newInput.startsWith('releases/') && newInput.endsWith('-main');
+              
+              if (isBranch) {
+                section += `**Release Branch:** \`${newInput}\`\n\n`;
                 section += `**🔗 Links:**\n`;
-                section += `- [📋 Compare Changes](https://github.com/rdkcentral/${repoName}/compare/${prevTag}...${newTag})\n`;
-                section += `- [📝 Release Notes](https://github.com/rdkcentral/${repoName}/releases/tag/${newTag})\n\n`;
+                section += `- [📋 Branch View](https://github.com/rdkcentral/${repoName}/tree/${newInput})\n`;
+                section += `- [📝 Branch Activity](https://github.com/rdkcentral/${repoName}/commits/${newInput})\n\n`;
                 section += `**What changed:**\n`;
-                section += `- Updated BitBake recipe from ${prevTag} to ${newTag}\n`;
-                section += `- See [detailed comparison](https://github.com/rdkcentral/${repoName}/compare/${prevTag}...${newTag}) for code changes\n\n`;
-              } else if (newTag) {
-                section += `**New Version:** \`${newTag}\`${prevTag ? ' (no change)' : ' (initial setup)'}\n\n`;
-                section += `**🔗 Links:**\n`;
-                section += `- [📝 Release Notes](https://github.com/rdkcentral/${repoName}/releases/tag/${newTag})\n\n`;
+                section += `- Updated BitBake recipe to use development branch ${newInput}\n`;
+                section += `- This is for sprint validation/testing purposes\n\n`;
+              } else {
+                // Handle version tags
+                if (prevTag && prevTag !== newInput) {
+                  section += `**Version Change:** \`${prevTag}\` → \`${newInput}\`\n\n`;
+                  section += `**🔗 Links:**\n`;
+                  section += `- [📋 Compare Changes](https://github.com/rdkcentral/${repoName}/compare/${prevTag}...${newInput})\n`;
+                  section += `- [📝 Release Notes](https://github.com/rdkcentral/${repoName}/releases/tag/${newInput})\n\n`;
+                  section += `**What changed:**\n`;
+                  section += `- Updated BitBake recipe from ${prevTag} to ${newInput}\n`;
+                  section += `- See [detailed comparison](https://github.com/rdkcentral/${repoName}/compare/${prevTag}...${newInput}) for code changes\n\n`;
+                } else if (newInput) {
+                  section += `**New Version:** \`${newInput}\`${prevTag ? ' (no change)' : ' (initial setup)'}\n\n`;
+                  section += `**🔗 Links:**\n`;
+                  section += `- [📝 Release Notes](https://github.com/rdkcentral/${repoName}/releases/tag/${newInput})\n\n`;
+                }
               }
               
               return section;
