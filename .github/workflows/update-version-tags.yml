@@ -115,35 +115,55 @@ jobs:
       - name: Capture Previous Versions
         id: capture-versions
         run: |
-          # Capture previous values before any updates
-          echo "📋 Capturing current versions before updates..."
+          # Only capture versions for version tags, skip for release branches
+          echo "📋 Checking if version capture is needed..."
           
-          # Function to get current tag from BB file
-          get_current_tag() {
-            local bb_file=$1
-            if [ -f "$bb_file" ]; then
-              # Look for active GIT_TAG first, then commented ones
-              grep "^GIT_TAG\s*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1 || \
-              grep "^#GIT_TAG\s*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1
-            fi
-          }
+          # Check if any inputs are version tags (not release branches)
+          HAS_VERSION_TAGS=false
+          [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
           
-          # Capture and store previous versions
-          [ -n "${{ inputs.ppp_manager_tag }}" ] && echo "PREV_PPP_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")" >> $GITHUB_ENV
-          [ -n "${{ inputs.vlan_manager_tag }}" ] && echo "PREV_VLAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")" >> $GITHUB_ENV  
-          [ -n "${{ inputs.wan_manager_tag }}" ] && echo "PREV_WAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")" >> $GITHUB_ENV
-          [ -n "${{ inputs.gpon_manager_tag }}" ] && echo "PREV_GPON_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")" >> $GITHUB_ENV
-          [ -n "${{ inputs.xdsl_manager_tag }}" ] && echo "PREV_XDSL_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")" >> $GITHUB_ENV
-          [ -n "${{ inputs.ipoe_health_check_tag }}" ] && echo "PREV_IPOE_HC=$(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")" >> $GITHUB_ENV
-          
-          # Show captured versions for debugging
-          echo "Captured previous versions:"
-          [ -n "${{ inputs.ppp_manager_tag }}" ] && echo "PPP Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")"
-          [ -n "${{ inputs.vlan_manager_tag }}" ] && echo "VLAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")"
-          [ -n "${{ inputs.wan_manager_tag }}" ] && echo "WAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")"
-          [ -n "${{ inputs.gpon_manager_tag }}" ] && echo "GPON Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")"
-          [ -n "${{ inputs.xdsl_manager_tag }}" ] && echo "xDSL Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")"
-          [ -n "${{ inputs.ipoe_health_check_tag }}" ] && echo "IPoE Health Check: $(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")"
+          if [ "$HAS_VERSION_TAGS" = "true" ]; then
+            echo "📋 Capturing current versions before updates (version tags detected)..."
+            
+            # Function to get current tag from BB file
+            get_current_tag() {
+              local bb_file=$1
+              if [ -f "$bb_file" ]; then
+                # Look for active GIT_TAG first, then commented ones
+                local tag=""
+                tag=$(grep "^GIT_TAG\s*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
+                if [ -z "$tag" ]; then
+                  tag=$(grep "^#GIT_TAG\s*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
+                fi
+                echo "$tag"
+              fi
+            }
+            
+            # Capture and store previous versions (only for version tags)
+            [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_PPP_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")" >> $GITHUB_ENV
+            [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_VLAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")" >> $GITHUB_ENV  
+            [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_WAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")" >> $GITHUB_ENV
+            [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_GPON_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")" >> $GITHUB_ENV
+            [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_XDSL_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")" >> $GITHUB_ENV
+            [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && echo "PREV_IPOE_HC=$(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")" >> $GITHUB_ENV
+            
+            # Show captured versions for debugging
+            echo "Captured previous versions:"
+            [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]] && echo "PPP Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")"
+            [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]] && echo "VLAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")"
+            [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && echo "WAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")"
+            [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && echo "GPON Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")"
+            [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && echo "xDSL Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")"
+            [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && echo "IPoE Health Check: $(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")"
+          else
+            echo "🔀 Using release branches - skipping version capture"
+            echo "   (Previous version tracking not needed for branch workflows)"
+          fi
 
       - name: Update Components
         run: |
