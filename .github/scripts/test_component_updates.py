@@ -158,7 +158,7 @@ class ComponentTester:
         
         if not dry_run:
             # Actually perform the update
-            success = self.updater.update_bb_file(tag_or_branch, repo, bb_file, config['name'])
+            success = self.updater.update_bb_file(tag_or_branch, repo, bb_file)
             return success
         
         return True
