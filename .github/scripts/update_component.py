@@ -16,14 +16,14 @@ For release branches (sprint validation):
 - Replaces PV with SRCREV = "${AUTOREV}"
 
 Usage:
-    python3 update_component.py <tag_or_branch> <repo> <bb_file> <component_name>
+    python3 update_component.py <tag_or_branch> <repo> <bb_file>
 
 Examples:
     # Official release:
-    python3 update_component.py v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb WanManager
+    python3 update_component.py v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb
     
     # Sprint validation:
-    python3 update_component.py releases/1.4.0-main ipoe-health-check recipes-support/ipoe-health-check/ipoe-health-check.bb IPoEHealthCheck
+    python3 update_component.py releases/1.4.0-main ipoe-health-check recipes-support/ipoe-health-check/ipoe-health-check.bb
 """
 
 import argparse
@@ -161,6 +161,27 @@ class ComponentUpdater:
         with urllib.request.urlopen(url) as response:
             return json.loads(response.read())
     
+    def _extract_component_name(self, content: str, repo: str) -> str:
+        """Extract the existing component name from SRC_URI."""
+        # Look for existing SRC_URI with name parameter
+        pattern = rf'SRC_URI\s*[:=]+\s*"git://github\.com/{self.github_org}/{repo}\.git[^"]*name=([^;]+)'
+        match = re.search(pattern, content)
+        
+        if match:
+            return match.group(1)
+        
+        # Fallback to common naming patterns if not found
+        name_map = {
+            'ppp-manager': 'PppManager',
+            'vlan-manager': 'VlanManager', 
+            'wan-manager': 'WanManager',
+            'gpon-manager': 'GponManager',
+            'xdsl-manager': 'xDSLManager',
+            'ipoe-health-check': 'IPoEHealthCheck'
+        }
+        
+        return name_map.get(repo, repo.title().replace('-', ''))
+
     def get_current_branch_from_bb(self, bb_file: Path, repo: str) -> Optional[str]:
         """Extract current branch from BB file's SRC_URI."""
         if not bb_file.exists():
@@ -176,7 +197,7 @@ class ComponentUpdater:
                 
         return None
     
-    def update_bb_file(self, tag_or_branch: str, repo: str, bb_file: Path, component_name: str) -> bool:
+    def update_bb_file(self, tag_or_branch: str, repo: str, bb_file: Path) -> bool:
         """
         Update a BitBake recipe file with new version tag or release branch.
         
@@ -184,7 +205,6 @@ class ComponentUpdater:
             tag_or_branch: Version tag (e.g., v2.11.0) or release branch (e.g., releases/1.3.0-main)
             repo: Repository name
             bb_file: Path to BitBake file
-            component_name: Component name for SRC_URI
             
         Returns:
             True if updated successfully, False otherwise
@@ -202,10 +222,14 @@ class ComponentUpdater:
             print("Expected: version tag (v1.3.0) or release branch (releases/1.3.0-main)")
             return False
         
-        print(f"🔄 Updating {component_name} with {'tag' if is_version_tag else 'branch'} {tag_or_branch}...")
-        
         # Read current content
         content = bb_file.read_text()
+        
+        # Extract existing component name to preserve it
+        component_name = self._extract_component_name(content, repo)
+        
+        print(f"🔄 Updating {component_name} with {'tag' if is_version_tag else 'branch'} {tag_or_branch}...")
+        print(f"📄 Using component name: {component_name}")
         
         if is_version_tag:
             # Handle version tag - official release
@@ -349,17 +373,16 @@ def main():
         epilog="""
 Examples:
   # Official release with version tag:
-  %(prog)s v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb WanManager
+  %(prog)s v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb
   
   # Sprint validation with release branch:
-  %(prog)s releases/1.4.0-main ipoe-health-check recipes-support/ipoe-health-check/ipoe-health-check.bb IPoEHealthCheck
+  %(prog)s releases/1.4.0-main ipoe-health-check recipes-support/ipoe-health-check/ipoe-health-check.bb
         """
     )
     
     parser.add_argument('tag_or_branch', help='Version tag (e.g., v2.11.0) or release branch (e.g., releases/1.4.0-main)')
     parser.add_argument('repo', help='Repository name (e.g., wan-manager)')
     parser.add_argument('bb_file', help='Path to BitBake recipe file')
-    parser.add_argument('component_name', help='Component name for SRC_URI')
     parser.add_argument('--org', default='rdkcentral', help='GitHub organization (default: rdkcentral)')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be done without making changes')
     
@@ -392,7 +415,7 @@ Examples:
         return 0
     
     # Perform the update
-    success = updater.update_bb_file(args.tag_or_branch, args.repo, bb_file, args.component_name)
+    success = updater.update_bb_file(args.tag_or_branch, args.repo, bb_file)
     return 0 if success else 1
 
 
