@@ -19,10 +19,10 @@ This directory contains scripts used by the GitHub workflow and for local develo
 **Examples**:
 ```bash
 # Dry run test
-python3 update_component.py --dry-run v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb WanManager
+python3 update_component.py --dry-run v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb
 
 # Actual update
-python3 update_component.py v1.5.0 xdsl-manager recipes-ccsp/ccsp/rdkxdslmanager.bb xDSLManager
+python3 update_component.py v1.5.0 xdsl-manager recipes-ccsp/ccsp/rdkxdslmanager.bb
 ```
 
 ### 2. `test_component_updates.py`
