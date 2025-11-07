@@ -167,7 +167,7 @@ class ComponentTester:
         """Extract current tag from BB file."""
         import re
         content = bb_file.read_text()
-        match = re.search(r'^#GIT_TAG = "([^"]*)"', content, re.MULTILINE)
+        match = re.search(r'^GIT_TAG = "([^"]*)"', content, re.MULTILINE)
         return match.group(1) if match else ""
     
     def run_tests(self, component_tags: Dict[str, str], dry_run: bool = True) -> bool:
