@@ -102,7 +102,7 @@ python3 .github/scripts/test_component_updates.py --all-components v1.6.0
 python3 .github/scripts/test_component_updates.py --list-components
 
 # Test a single component update
-python3 .github/scripts/update_component.py --dry-run v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb WanManager
+python3 .github/scripts/update_component.py --dry-run v2.11.0 wan-manager recipes-ccsp/ccsp/rdk-wanmanager.bb
 ```
 
 ## Troubleshooting
