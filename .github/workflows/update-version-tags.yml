@@ -132,25 +132,50 @@ jobs:
             
             # Function to get current tag from BB file
             get_current_tag() {
-              local bb_file=$1
+              local bb_file="$1"
               if [ -f "$bb_file" ]; then
                 # Look for active GIT_TAG first, then commented ones
                 local tag=""
-                tag=$(grep "^GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
+                tag=$(grep "^GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' | head -1) || true
                 if [ -z "$tag" ]; then
-                  tag=$(grep "^#GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
+                  tag=$(grep "^#GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' | head -1) || true
                 fi
                 echo "$tag"
+              else
+                echo ""
               fi
             }
             
             # Capture and store previous versions (only for version tags)
-            [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_PPP_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")" >> $GITHUB_ENV
-            [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_VLAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")" >> $GITHUB_ENV  
-            [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_WAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")" >> $GITHUB_ENV
-            [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_GPON_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")" >> $GITHUB_ENV
-            [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && echo "PREV_XDSL_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")" >> $GITHUB_ENV
-            [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && echo "PREV_IPOE_HC=$(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")" >> $GITHUB_ENV
+            if [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_PPP_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")
+              echo "PREV_PPP_MANAGER=$PREV_PPP_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_VLAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")
+              echo "PREV_VLAN_MANAGER=$PREV_VLAN_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_WAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")
+              echo "PREV_WAN_MANAGER=$PREV_WAN_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_GPON_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")
+              echo "PREV_GPON_MANAGER=$PREV_GPON_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_XDSL_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")
+              echo "PREV_XDSL_MANAGER=$PREV_XDSL_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]]; then
+              PREV_IPOE_HC=$(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")
+              echo "PREV_IPOE_HC=$PREV_IPOE_HC" >> $GITHUB_ENV
+            fi
             
             # Show captured versions for debugging
             echo "Captured previous versions:"
