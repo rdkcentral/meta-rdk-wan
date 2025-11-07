@@ -136,9 +136,9 @@ jobs:
               if [ -f "$bb_file" ]; then
                 # Look for active GIT_TAG first, then commented ones
                 local tag=""
-                tag=$(grep "^GIT_TAG\s*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
+                tag=$(grep "^GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
                 if [ -z "$tag" ]; then
-                  tag=$(grep "^#GIT_TAG\s*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
+                  tag=$(grep "^#GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\(.*\)".*/\1/' | head -1) || true
                 fi
                 echo "$tag"
               fi
