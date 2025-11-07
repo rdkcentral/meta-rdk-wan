@@ -84,7 +84,7 @@ The workflow modifies the commented release lines in each BitBake recipe file:
 - The workflow **automatically detects the correct branch** for each tag using GitHub API
 - Multiple fallback mechanisms ensure reliability even if API queries fail
 - Version tags should follow semantic versioning (e.g., `v1.5.0`)
-- The workflow creates a draft PR that requires manual review before merging
+- The workflow creates a PR that is ready for review and requires manual approval before merging
 - Make sure the specified tags exist in their respective repositories before running
 
 ## Local Testing
