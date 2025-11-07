@@ -39,9 +39,9 @@ The workflow can update version tags for the following components:
    - Falls back to existing branch in BitBake file if API fails
    - Uses version-based pattern as final fallback
 4. **Tag Updates**: For each specified component:
-   - Updates the `#GIT_TAG` line with the new version
-   - Updates the `#SRC_URI` line with the automatically detected branch
-   - Updates the `#PV` line with the tag reference
+   - Updates the `GIT_TAG` line with the new version
+   - Updates the `SRC_URI` line with the automatically detected branch
+   - Updates the `PV` line with the tag reference
 5. **Changelog Generation**: Creates a summary of changes between versions
 6. **Commit**: Commits all changes with a descriptive message
 7. **Pull Request**: Creates a PR with:
@@ -66,17 +66,17 @@ The workflow modifies the commented release lines in each BitBake recipe file:
 **Before:**
 ```bitbake
 # Please use below part only for official release and release candidates
-#GIT_TAG = "v1.4.0"
-#SRC_URI := "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.4.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
-#PV = "${GIT_TAG}+git${SRCPV}"
+GIT_TAG = "v1.4.0"
+SRC_URI := "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.4.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
+PV = "${GIT_TAG}+git${SRCPV}"
 ```
 
 **After (for v1.5.0):**
 ```bitbake
 # Please use below part only for official release and release candidates
-#GIT_TAG = "v1.5.0"
-#SRC_URI := "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.5.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
-#PV = "${GIT_TAG}+git${SRCPV}"
+GIT_TAG = "v1.5.0"
+SRC_URI := "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.5.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
+PV = "${GIT_TAG}+git${SRCPV}"
 ```
 
 ## Notes
