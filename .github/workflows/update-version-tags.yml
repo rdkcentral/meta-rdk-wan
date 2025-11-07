@@ -179,12 +179,24 @@ jobs:
             
             # Show captured versions for debugging
             echo "Captured previous versions:"
-            [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]] && echo "PPP Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")"
-            [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]] && echo "VLAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")"
-            [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && echo "WAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")"
-            [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && echo "GPON Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")"
-            [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && echo "xDSL Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")"
-            [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && echo "IPoE Health Check: $(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")"
+            if [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "PPP Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")"
+            fi
+            if [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "VLAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")"
+            fi
+            if [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "WAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")"
+            fi
+            if [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "GPON Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")"
+            fi
+            if [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "xDSL Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")"
+            fi
+            if [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]]; then
+              echo "IPoE Health Check: $(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")"
+            fi
           else
             echo "🔀 Using release branches - skipping version capture"
             echo "   (Previous version tracking not needed for branch workflows)"
