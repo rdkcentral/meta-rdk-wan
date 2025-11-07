@@ -7,7 +7,7 @@ This directory contains scripts used by the GitHub workflow and for local develo
 ### 1. `update_component.py`
 **Purpose**: Updates BitBake recipe files with new version tags  
 **Language**: Python 3  
-**Usage**: `python3 update_component.py [options] <tag> <repo> <bb_file> <component_name>`
+**Usage**: `python3 update_component.py [options] <tag> <repo> <bb_file>
 
 **Key Features**:
 - Automatic branch detection using GitHub API
