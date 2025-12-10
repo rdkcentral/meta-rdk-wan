@@ -60,21 +60,22 @@ jobs:
 
       - name: Copy scripts to workspace
         run: |
-          # Debug: Check what was checked out
-          echo "Contents of workflow-scripts:"
-          ls -R workflow-scripts/
+          # Use absolute path to access workflow-scripts
+          WORKFLOW_SCRIPTS_PATH="${GITHUB_WORKSPACE}/../workflow-scripts"
+          
+          echo "🔍 Checking for scripts at: $WORKFLOW_SCRIPTS_PATH"
+          ls -R "$WORKFLOW_SCRIPTS_PATH" || echo "Directory not found"
           
           # Copy scripts from workflow branch to current workspace
           mkdir -p .github/scripts
           
-          # Find and copy all files from the sparse checkout
-          if [ -d "workflow-scripts/.github/scripts" ]; then
-            cp -v workflow-scripts/.github/scripts/* .github/scripts/ 2>/dev/null || true
-          fi
-          
-          # Also try to copy from .github/scripts if it exists at root
-          if [ -d "workflow-scripts/.github" ]; then
-            cp -rv workflow-scripts/.github/scripts/* .github/scripts/ 2>/dev/null || true
+          # Copy the scripts
+          if [ -d "$WORKFLOW_SCRIPTS_PATH/.github/scripts" ]; then
+            echo "📋 Copying scripts from workflow branch..."
+            cp -v "$WORKFLOW_SCRIPTS_PATH/.github/scripts/"* .github/scripts/
+          else
+            echo "❌ Scripts directory not found at $WORKFLOW_SCRIPTS_PATH/.github/scripts"
+            exit 1
           fi
           
           echo "✅ Scripts copied from workflow branch"
