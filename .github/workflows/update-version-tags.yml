@@ -44,7 +44,7 @@ jobs:
       - name: Checkout workflow branch for scripts
         uses: actions/checkout@v4
         with:
-          path: workflow-scripts
+          path: /tmp/workflow-scripts
           token: ${{ secrets.GITHUB_TOKEN }}
           sparse-checkout: |
             .github/scripts
@@ -56,25 +56,21 @@ jobs:
           ref: ${{ inputs.source_branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          clean: false
 
       - name: Copy scripts to workspace
         run: |
-          # Use absolute path to access workflow-scripts
-          WORKFLOW_SCRIPTS_PATH="${GITHUB_WORKSPACE}/../workflow-scripts"
-          
-          echo "🔍 Checking for scripts at: $WORKFLOW_SCRIPTS_PATH"
-          ls -R "$WORKFLOW_SCRIPTS_PATH" || echo "Directory not found"
+          echo "🔍 Checking for scripts at: /tmp/workflow-scripts"
+          ls -R /tmp/workflow-scripts || echo "Directory not found"
           
           # Copy scripts from workflow branch to current workspace
           mkdir -p .github/scripts
           
           # Copy the scripts
-          if [ -d "$WORKFLOW_SCRIPTS_PATH/.github/scripts" ]; then
+          if [ -d "/tmp/workflow-scripts/.github/scripts" ]; then
             echo "📋 Copying scripts from workflow branch..."
-            cp -v "$WORKFLOW_SCRIPTS_PATH/.github/scripts/"* .github/scripts/
+            cp -v /tmp/workflow-scripts/.github/scripts/* .github/scripts/
           else
-            echo "❌ Scripts directory not found at $WORKFLOW_SCRIPTS_PATH/.github/scripts"
+            echo "❌ Scripts directory not found"
             exit 1
           fi
           
