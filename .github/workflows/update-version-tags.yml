@@ -41,12 +41,28 @@ jobs:
   update-tags:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout workflow branch for scripts
+        uses: actions/checkout@v4
+        with:
+          path: workflow-scripts
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: |
+            .github/scripts
+          sparse-checkout-cone-mode: false
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+
+      - name: Copy scripts to workspace
+        run: |
+          # Copy scripts from workflow branch to current workspace
+          mkdir -p .github/scripts
+          cp -r workflow-scripts/.github/scripts/* .github/scripts/
+          echo "✅ Scripts copied from workflow branch"
 
       - name: Validate inputs
         run: |
