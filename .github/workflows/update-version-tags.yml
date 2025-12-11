@@ -418,7 +418,8 @@ jobs:
           # Create detailed commit message with PR body
           COMMIT_MSG="${PR_TITLE}\n\n${PR_BODY}"
           
-          git add .
+          # Only stage .bb files, not the restored .github/scripts directory
+          git add recipes-ccsp/ccsp/*.bb recipes-support/ipoe-health-check/*.bb
           echo -e "$COMMIT_MSG" | git commit -F -
           echo "has-changes=true" >> $GITHUB_OUTPUT
 
