@@ -3,6 +3,11 @@ name: Update Version Tags
 on:
   workflow_dispatch:
     inputs:
+      pr_title:
+        description: 'Pull Request and Commit Title'
+        required: false
+        default: 'Update Component Version Tags'
+        type: string
       source_branch:
         description: 'Source branch to create PR from'
         required: true
@@ -41,12 +46,39 @@ jobs:
   update-tags:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout workflow branch for scripts
+        uses: actions/checkout@v4
+        with:
+          path: .workflow-scripts-temp
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: |
+            .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Backup scripts before main checkout
+        run: |
+          # Create a temporary backup in /tmp (outside workspace)
+          mkdir -p /tmp/gh-scripts-backup
+          cp -r .workflow-scripts-temp/.github/scripts /tmp/gh-scripts-backup/
+          echo "✅ Scripts backed up to /tmp/gh-scripts-backup/scripts"
+          ls -la /tmp/gh-scripts-backup/scripts/
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+
+      - name: Restore scripts to workspace
+        run: |
+          echo "📋 Restoring scripts from backup..."
+          mkdir -p .github/scripts
+          cp -v /tmp/gh-scripts-backup/scripts/* .github/scripts/
+          
+          echo "✅ Scripts restored to workspace"
+          echo "Contents of .github/scripts:"
+          ls -la .github/scripts/
 
       - name: Validate inputs
         run: |
@@ -271,6 +303,101 @@ jobs:
             echo "✅ Updated components:$COMPONENTS_TO_UPDATE"
           fi
 
+      - name: Generate PR Body
+        id: pr-body
+        run: |
+          # Generate detailed PR body
+          PR_BODY="## 🚀 Component Version Updates\n\n"
+          
+          # Helper function to generate component section
+          generate_component_section() {
+            local component=$1
+            local new_input=$2
+            local prev_tag=$3
+            local repo=$4
+            
+            if [ -z "$new_input" ]; then
+              return
+            fi
+            
+            local section="### 📦 ${component}\n\n"
+            
+            # Check if input is a release branch
+            if [[ "$new_input" =~ ^releases/.*-main$ ]]; then
+              section+="**Release Branch:** \\`${new_input}\\`\n\n"
+              section+="**🔗 Links:**\n"
+              section+="- [📋 Branch View](https://github.com/rdkcentral/${repo}/tree/${new_input})\n"
+              section+="- [📝 Branch Activity](https://github.com/rdkcentral/${repo}/commits/${new_input})\n\n"
+              section+="**What changed:**\n"
+              section+="- Updated BitBake recipe to use development branch ${new_input}\n"
+              section+="- This is for sprint validation/testing purposes\n\n"
+            else
+              # Handle version tags
+              if [ -n "$prev_tag" ] && [ "$prev_tag" != "$new_input" ]; then
+                section+="**Version Change:** \\`${prev_tag}\\` → \\`${new_input}\\`\n\n"
+                section+="**🔗 Links:**\n"
+                section+="- [📋 Compare Changes](https://github.com/rdkcentral/${repo}/compare/${prev_tag}...${new_input})\n"
+                section+="- [📝 Release Notes](https://github.com/rdkcentral/${repo}/releases/tag/${new_input})\n\n"
+                section+="**What changed:**\n"
+                section+="- Updated BitBake recipe from ${prev_tag} to ${new_input}\n"
+                section+="- See [detailed comparison](https://github.com/rdkcentral/${repo}/compare/${prev_tag}...${new_input}) for code changes\n\n"
+              else
+                section+="**New Version:** \\`${new_input}\\`"
+                [ -n "$prev_tag" ] && section+=" (no change)" || section+=" (initial setup)"
+                section+="\n\n**🔗 Links:**\n"
+                section+="- [📝 Release Notes](https://github.com/rdkcentral/${repo}/releases/tag/${new_input})\n\n"
+              fi
+            fi
+            
+            echo -e "$section"
+          }
+          
+          # Generate sections for each component
+          PR_BODY+=$(generate_component_section "PPP Manager" "${{ inputs.ppp_manager_tag }}" "$PREV_PPP_MANAGER" "ppp-manager")
+          PR_BODY+=$(generate_component_section "VLAN Manager" "${{ inputs.vlan_manager_tag }}" "$PREV_VLAN_MANAGER" "vlan-manager")
+          PR_BODY+=$(generate_component_section "WAN Manager" "${{ inputs.wan_manager_tag }}" "$PREV_WAN_MANAGER" "wan-manager")
+          PR_BODY+=$(generate_component_section "GPON Manager" "${{ inputs.gpon_manager_tag }}" "$PREV_GPON_MANAGER" "gpon-manager")
+          PR_BODY+=$(generate_component_section "xDSL Manager" "${{ inputs.xdsl_manager_tag }}" "$PREV_XDSL_MANAGER" "xdsl-manager")
+          PR_BODY+=$(generate_component_section "IPoE Health Check" "${{ inputs.ipoe_health_check_tag }}" "$PREV_IPOE_HC" "ipoe-health-check")
+          
+          # Add summary section
+          PR_BODY+="## 📋 Summary of Changes\n\n"
+          PR_BODY+="This PR updates BitBake recipe files (.bb) with new version tags and branch references.\n\n"
+          PR_BODY+="**Files Modified:**\n"
+          
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-ppp-manager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-vlanmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-wanmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdkgponmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdkxdslmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            PR_BODY+="- \`recipes-support/ipoe-health-check/ipoe-health-check.bb\`\n"
+          fi
+          
+          PR_BODY+="\n## ✅ Testing Checklist\n\n"
+          PR_BODY+="Please verify that:\n"
+          PR_BODY+="- [ ] All updated tags exist in their respective repositories\n"
+          PR_BODY+="- [ ] The branch references are correct for each tag\n"
+          PR_BODY+="- [ ] The BitBake recipes build successfully\n"
+          PR_BODY+="- [ ] Component names are preserved correctly\n\n"
+          PR_BODY+="---\n"
+          PR_BODY+="*🤖 This PR was automatically generated by the Update Version Tags workflow.*"
+          
+          # Save PR body to environment
+          echo "PR_BODY<<EOF" >> $GITHUB_ENV
+          echo -e "$PR_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Commit changes
         id: commit
         run: |
@@ -285,51 +412,14 @@ jobs:
           echo "Files to be updated:"
           git diff --name-only
           
-          # Helper function to format component message
-          format_component_message() {
-            local component=$1
-            local input=$2
-            local prev_value=$3
-            
-            # If input is a branch (releases/X.Y.Z-main), don't show diff
-            if [[ "$input" =~ ^releases/ ]]; then
-              echo "- $component: $input (branch)"
-            # If input is a version tag, show diff if available
-            elif [ -n "$prev_value" ] && [ "$prev_value" != "$input" ]; then
-              echo "- $component: $prev_value → $input"
-            else
-              echo "- $component: $input"
-            fi
-          }
+          # Use PR title as commit title
+          PR_TITLE="${{ inputs.pr_title }}"
           
-          # Create commit message
-          COMMIT_MSG="Update component version tags"
+          # Create detailed commit message with PR body
+          COMMIT_MSG="${PR_TITLE}\n\n${PR_BODY}"
           
-          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
-            COMMIT_MSG="$COMMIT_MSG\n\n$(format_component_message "PPP Manager" "${{ inputs.ppp_manager_tag }}" "$PREV_PPP_MANAGER")"
-          fi
-          
-          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
-            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "VLAN Manager" "${{ inputs.vlan_manager_tag }}" "$PREV_VLAN_MANAGER")"
-          fi
-          
-          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
-            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "WAN Manager" "${{ inputs.wan_manager_tag }}" "$PREV_WAN_MANAGER")"
-          fi
-          
-          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
-            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "GPON Manager" "${{ inputs.gpon_manager_tag }}" "$PREV_GPON_MANAGER")"
-          fi
-          
-          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
-            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "xDSL Manager" "${{ inputs.xdsl_manager_tag }}" "$PREV_XDSL_MANAGER")"
-          fi
-          
-          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
-            COMMIT_MSG="$COMMIT_MSG\n$(format_component_message "IPoE Health Check" "${{ inputs.ipoe_health_check_tag }}" "$PREV_IPOE_HC")"
-          fi
-          
-          git add .
+          # Only stage .bb files, not the restored .github/scripts directory
+          git add recipes-ccsp/ccsp/*.bb recipes-support/ipoe-health-check/*.bb
           echo -e "$COMMIT_MSG" | git commit -F -
           echo "has-changes=true" >> $GITHUB_OUTPUT
 
@@ -343,84 +433,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const prTitle = 'Update Component Version Tags';
+            const prTitle = '${{ inputs.pr_title }}';
             
-            let prBody = '## 🚀 Component Version Updates\n\n';
-            
-            const inputs = context.payload.inputs;
-            const prevVersions = {
-              ppp_manager: process.env.PREV_PPP_MANAGER,
-              vlan_manager: process.env.PREV_VLAN_MANAGER,
-              wan_manager: process.env.PREV_WAN_MANAGER,
-              gpon_manager: process.env.PREV_GPON_MANAGER,
-              xdsl_manager: process.env.PREV_XDSL_MANAGER,
-              ipoe_health_check: process.env.PREV_IPOE_HC
-            };
-            
-            // Helper function to generate component changelog
-            function generateComponentSection(componentName, newInput, prevTag, repoName) {
-              if (!newInput) return '';
-              
-              let section = `### 📦 ${componentName}\n\n`;
-              
-              // Check if input is a release branch
-              const isBranch = newInput.startsWith('releases/') && newInput.endsWith('-main');
-              
-              if (isBranch) {
-                section += `**Release Branch:** \`${newInput}\`\n\n`;
-                section += `**🔗 Links:**\n`;
-                section += `- [📋 Branch View](https://github.com/rdkcentral/${repoName}/tree/${newInput})\n`;
-                section += `- [📝 Branch Activity](https://github.com/rdkcentral/${repoName}/commits/${newInput})\n\n`;
-                section += `**What changed:**\n`;
-                section += `- Updated BitBake recipe to use development branch ${newInput}\n`;
-                section += `- This is for sprint validation/testing purposes\n\n`;
-              } else {
-                // Handle version tags
-                if (prevTag && prevTag !== newInput) {
-                  section += `**Version Change:** \`${prevTag}\` → \`${newInput}\`\n\n`;
-                  section += `**🔗 Links:**\n`;
-                  section += `- [📋 Compare Changes](https://github.com/rdkcentral/${repoName}/compare/${prevTag}...${newInput})\n`;
-                  section += `- [📝 Release Notes](https://github.com/rdkcentral/${repoName}/releases/tag/${newInput})\n\n`;
-                  section += `**What changed:**\n`;
-                  section += `- Updated BitBake recipe from ${prevTag} to ${newInput}\n`;
-                  section += `- See [detailed comparison](https://github.com/rdkcentral/${repoName}/compare/${prevTag}...${newInput}) for code changes\n\n`;
-                } else if (newInput) {
-                  section += `**New Version:** \`${newInput}\`${prevTag ? ' (no change)' : ' (initial setup)'}\n\n`;
-                  section += `**🔗 Links:**\n`;
-                  section += `- [📝 Release Notes](https://github.com/rdkcentral/${repoName}/releases/tag/${newInput})\n\n`;
-                }
-              }
-              
-              return section;
-            }
-            
-            // Generate sections for each component
-            prBody += generateComponentSection('PPP Manager', inputs.ppp_manager_tag, prevVersions.ppp_manager, 'ppp-manager');
-            prBody += generateComponentSection('VLAN Manager', inputs.vlan_manager_tag, prevVersions.vlan_manager, 'vlan-manager');
-            prBody += generateComponentSection('WAN Manager', inputs.wan_manager_tag, prevVersions.wan_manager, 'wan-manager');
-            prBody += generateComponentSection('GPON Manager', inputs.gpon_manager_tag, prevVersions.gpon_manager, 'gpon-manager');
-            prBody += generateComponentSection('xDSL Manager', inputs.xdsl_manager_tag, prevVersions.xdsl_manager, 'xdsl-manager');
-            prBody += generateComponentSection('IPoE Health Check', inputs.ipoe_health_check_tag, prevVersions.ipoe_health_check, 'ipoe-health-check');
-            
-            prBody += '## 📋 Summary of Changes\n\n';
-            prBody += 'This PR updates BitBake recipe files (.bb) with new version tags and branch references.\n\n';
-            prBody += '**Files Modified:**\n';
-            
-            if (inputs.ppp_manager_tag) prBody += '- `recipes-ccsp/ccsp/rdk-ppp-manager.bb`\n';
-            if (inputs.vlan_manager_tag) prBody += '- `recipes-ccsp/ccsp/rdk-vlanmanager.bb`\n';
-            if (inputs.wan_manager_tag) prBody += '- `recipes-ccsp/ccsp/rdk-wanmanager.bb`\n';
-            if (inputs.gpon_manager_tag) prBody += '- `recipes-ccsp/ccsp/rdkgponmanager.bb`\n';
-            if (inputs.xdsl_manager_tag) prBody += '- `recipes-ccsp/ccsp/rdkxdslmanager.bb`\n';
-            if (inputs.ipoe_health_check_tag) prBody += '- `recipes-support/ipoe-health-check/ipoe-health-check.bb`\n';
-            
-            prBody += '\n## ✅ Testing Checklist\n\n';
-            prBody += 'Please verify that:\n';
-            prBody += '- [ ] All updated tags exist in their respective repositories\n';
-            prBody += '- [ ] The branch references are correct for each tag\n';
-            prBody += '- [ ] The BitBake recipes build successfully\n';
-            prBody += '- [ ] Component names are preserved correctly\n\n';
-            prBody += '---\n';
-            prBody += '*🤖 This PR was automatically generated by the Update Version Tags workflow.*';
+            // Use the PR body generated in the previous step
+            const prBody = process.env.PR_BODY;
             
             const { data: pr } = await github.rest.pulls.create({
               owner: context.repo.owner,
