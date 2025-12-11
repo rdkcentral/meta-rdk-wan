@@ -9,12 +9,12 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-GIT_TAG = "v2.11.0"
+GIT_TAG = "v2.11.1"
 SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.11.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
 # Please use below part only for release verification/testing
-#SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.11.0-main;protocol=https;name=WanManager;"
+#SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.11.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 #SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
@@ -93,7 +93,6 @@ do_install_append () {
     ln -sf ${bindir}/netmonitor ${D}${exec_prefix}/rdk/wanmanager/netmonitor
     install -m 644 ${S}/config/${XML_NAME} ${D}/usr/rdk/wanmanager/RdkWanManager.xml
 }
-
 
 FILES_${PN} = " \
    ${exec_prefix}/rdk/wanmanager/wanmanager \
