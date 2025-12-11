@@ -365,12 +365,24 @@ jobs:
           PR_BODY+="This PR updates BitBake recipe files (.bb) with new version tags and branch references.\n\n"
           PR_BODY+="**Files Modified:**\n"
           
-          [ -n "${{ inputs.ppp_manager_tag }}" ] && PR_BODY+="- \\`recipes-ccsp/ccsp/rdk-ppp-manager.bb\\`\n"
-          [ -n "${{ inputs.vlan_manager_tag }}" ] && PR_BODY+="- \\`recipes-ccsp/ccsp/rdk-vlanmanager.bb\\`\n"
-          [ -n "${{ inputs.wan_manager_tag }}" ] && PR_BODY+="- \\`recipes-ccsp/ccsp/rdk-wanmanager.bb\\`\n"
-          [ -n "${{ inputs.gpon_manager_tag }}" ] && PR_BODY+="- \\`recipes-ccsp/ccsp/rdkgponmanager.bb\\`\n"
-          [ -n "${{ inputs.xdsl_manager_tag }}" ] && PR_BODY+="- \\`recipes-ccsp/ccsp/rdkxdslmanager.bb\\`\n"
-          [ -n "${{ inputs.ipoe_health_check_tag }}" ] && PR_BODY+="- \\`recipes-support/ipoe-health-check/ipoe-health-check.bb\\`\n"
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-ppp-manager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-vlanmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-wanmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdkgponmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdkxdslmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            PR_BODY+="- \`recipes-support/ipoe-health-check/ipoe-health-check.bb\`\n"
+          fi
           
           PR_BODY+="\n## ✅ Testing Checklist\n\n"
           PR_BODY+="Please verify that:\n"
