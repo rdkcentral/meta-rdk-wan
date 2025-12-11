@@ -44,6 +44,9 @@ MAPT_FEATURE_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt','
 # Flag for DHCPmanager conf
 EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dhcp_manager", " --enable-dhcp_manager=yes", " ",d)}"
 
+# Flag for next generation DSLite support
+EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dslite_v2", " --enable-dslite-v2=yes", " ",d)}"
+
 # Use the variable in CFLAGS_append
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
@@ -78,6 +81,12 @@ do_compile_prepend () {
 
     if [ "${MAPT_FEATURE_ENABLED}" = "true" ]; then
         sed -i '2i <?define FEATURE_MAPT=True?>' ${S}/config/${XML_NAME}
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dslite_v2', 'true', 'false', d)}; then
+        if ! grep -q '^<?define FEATURE_DSLITE_V2=True?>' ${S}/config/${XML_NAME}; then
+            sed -i '2i <?define FEATURE_DSLITE_V2=True?>' ${S}/config/${XML_NAME}
+        fi
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', 'true', 'false', d)}; then
