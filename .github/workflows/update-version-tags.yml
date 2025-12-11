@@ -44,11 +44,19 @@ jobs:
       - name: Checkout workflow branch for scripts
         uses: actions/checkout@v4
         with:
-          path: /tmp/workflow-scripts
+          path: .workflow-scripts-temp
           token: ${{ secrets.GITHUB_TOKEN }}
           sparse-checkout: |
             .github/scripts
           sparse-checkout-cone-mode: false
+
+      - name: Backup scripts before main checkout
+        run: |
+          # Create a temporary backup in /tmp (outside workspace)
+          mkdir -p /tmp/gh-scripts-backup
+          cp -r .workflow-scripts-temp/.github/scripts /tmp/gh-scripts-backup/
+          echo "✅ Scripts backed up to /tmp/gh-scripts-backup/scripts"
+          ls -la /tmp/gh-scripts-backup/scripts/
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,24 +65,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Copy scripts to workspace
+      - name: Restore scripts to workspace
         run: |
-          echo "🔍 Checking for scripts at: /tmp/workflow-scripts"
-          ls -R /tmp/workflow-scripts || echo "Directory not found"
-          
-          # Copy scripts from workflow branch to current workspace
+          echo "📋 Restoring scripts from backup..."
           mkdir -p .github/scripts
+          cp -v /tmp/gh-scripts-backup/scripts/* .github/scripts/
           
-          # Copy the scripts
-          if [ -d "/tmp/workflow-scripts/.github/scripts" ]; then
-            echo "📋 Copying scripts from workflow branch..."
-            cp -v /tmp/workflow-scripts/.github/scripts/* .github/scripts/
-          else
-            echo "❌ Scripts directory not found"
-            exit 1
-          fi
-          
-          echo "✅ Scripts copied from workflow branch"
+          echo "✅ Scripts restored to workspace"
           echo "Contents of .github/scripts:"
           ls -la .github/scripts/
 
