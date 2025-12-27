@@ -37,12 +37,19 @@ do_install_append () {
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so.1
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so
     
+    # Install test executables for on-target testing
+    install -d ${D}${bindir}/epon-tests
+    for test in ${B}/tests/unit/test_*; do
+        [ -x "$test" ] && install -m 755 "$test" ${D}${bindir}/epon-tests/ || true
+    done
+    
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
 }
 
 FILES_${PN} = " \
    ${bindir}/epon_manager \
+   ${bindir}/epon-tests/* \
    ${libdir}/libepon_hal_mock.so* \
    /usr/rdk/eponmanager \
    "
