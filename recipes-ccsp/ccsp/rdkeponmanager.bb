@@ -27,15 +27,11 @@ CFLAGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-
 
 LDFLAGS:append = " -lrbus -lrdkloggers"
 
-EXTRA_OECONF += "RBUS_CFLAGS='-I${STAGING_INCDIR}/rbus' --enable-tests"
+EXTRA_OECONF += "--enable-tests"
 
 
-do_install () {
-    # Install the epon_manager binary (use .libs for actual binary, not libtool wrapper)
-    install -d ${D}${bindir}
-    install -m 755 ${B}/src/core/.libs/epon_manager ${D}${bindir}/epon_manager
-    
-    # Install HAL mock library
+do_install_append () {
+    # Install HAL mock library (not installed by default make install since it's in tests/)
     install -d ${D}${libdir}
     install -m 755 ${B}/tests/hal_mock/.libs/libepon_hal_mock.so.1.0.0 ${D}${libdir}/
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so.1
@@ -43,16 +39,12 @@ do_install () {
     
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
-    install -d ${D}${sysconfdir}/rdk/conf
-    install -d ${D}${sysconfdir}/rdk/schemas
 }
 
 FILES_${PN} = " \
    ${bindir}/epon_manager \
    ${libdir}/libepon_hal_mock.so* \
    /usr/rdk/eponmanager \
-   ${sysconfdir}/rdk/conf \
-   ${sysconfdir}/rdk/schemas \
    "
 
 FILES_${PN}-dbg = " \
