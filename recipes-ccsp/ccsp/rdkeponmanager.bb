@@ -49,8 +49,6 @@ FILES_${PN} = " \
    ${bindir}/epon_manager \
    ${bindir}/epon-tests \
    ${libdir}/libepon_hal_mock.so* \
-   ${libdir}/libepon_telemetry.so* \
-   ${libdir}/libeponMgr_logger.so* \
    /usr/rdk/eponmanager \
    ${sysconfdir}/epon \
    "
