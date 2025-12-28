@@ -18,7 +18,6 @@ inherit autotools pkgconfig
 
 CFLAGS:append = " \
     -I${STAGING_INCDIR} \
-    -I${STAGING_INCDIR}/rbus \
     -Werror \
     -Wall \
     -Wno-error=switch \
@@ -48,15 +47,19 @@ do_install_append () {
 
 FILES_${PN} = " \
    ${bindir}/epon_manager \
-   ${bindir}/epon-tests/* \
+   ${bindir}/epon-tests \
    ${libdir}/libepon_hal_mock.so* \
+   ${libdir}/libepon_telemetry.so* \
+   ${libdir}/libeponMgr_logger.so* \
    /usr/rdk/eponmanager \
+   ${sysconfdir}/epon \
    "
 
 FILES_${PN}-dbg = " \
     ${prefix}/rdk/eponmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \
+    ${bindir}/epon-tests/.debug \
     ${libdir}/.debug \
 "
-INSANE_SKIP_${PN} += "dev-deps useless-rpaths"
+INSANE_SKIP:${PN} += "dev-deps useless-rpaths"
