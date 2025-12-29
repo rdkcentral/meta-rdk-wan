@@ -27,23 +27,12 @@ LDFLAGS:append = " -lrbus -lrdkloggers"
 
 EXTRA_OECONF += "--enable-tests"
 
-do_compile_append () {
-    # Build the test executables (they use check_PROGRAMS so need explicit make check)
-    oe_runmake -C ${B}/tests check TESTS=
-}
-
 do_install_append () {
-    # Install HAL mock library (not installed by default make install since it's in tests/)
+    # Install HAL mock library for integration testing
     install -d ${D}${libdir}
     install -m 755 ${B}/tests/hal_mock/.libs/libepon_hal_mock.so.1.0.0 ${D}${libdir}/
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so.1
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so
-    
-    # Install test executables for on-target testing
-    install -d ${D}${bindir}/epon-tests
-    for test in ${B}/tests/unit/.libs/test_*; do
-        [ -x "$test" ] && [ -f "$test" ] && install -m 755 "$test" ${D}${bindir}/epon-tests/ || true
-    done
 
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
@@ -51,7 +40,6 @@ do_install_append () {
 
 FILES_${PN} = " \
    ${bindir}/epon_manager \
-   ${bindir}/epon-tests \
    ${libdir}/libepon_hal_mock.so* \
    /usr/rdk/eponmanager \
    ${sysconfdir}/epon \
@@ -61,7 +49,6 @@ FILES_${PN}-dbg = " \
     ${prefix}/rdk/eponmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \
-    ${bindir}/epon-tests/.debug \
     ${libdir}/.debug \
 "
 INSANE_SKIP:${PN} += "dev-deps useless-rpaths"
