@@ -16,7 +16,7 @@ B = "${WORKDIR}/build"
 
 inherit autotools pkgconfig
 
-CFLAGS:append = " \
+CFLAGS += " \
     -I${STAGING_INCDIR} \
     -Werror \
     -Wall \
@@ -27,6 +27,10 @@ LDFLAGS:append = " -lrbus -lrdkloggers"
 
 EXTRA_OECONF += "--enable-tests"
 
+do_compile_append () {
+    # Build the test executables (they use check_PROGRAMS so need explicit make check)
+    oe_runmake -C ${B}/tests check TESTS=
+}
 
 do_install_append () {
     # Install HAL mock library (not installed by default make install since it's in tests/)
@@ -37,10 +41,10 @@ do_install_append () {
     
     # Install test executables for on-target testing
     install -d ${D}${bindir}/epon-tests
-    for test in ${B}/tests/unit/test_*; do
-        [ -x "$test" ] && install -m 755 "$test" ${D}${bindir}/epon-tests/ || true
+    for test in ${B}/tests/unit/.libs/test_*; do
+        [ -x "$test" ] && [ -f "$test" ] && install -m 755 "$test" ${D}${bindir}/epon-tests/ || true
     done
-    
+
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
 }
