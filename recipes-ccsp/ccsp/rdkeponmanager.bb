@@ -25,6 +25,7 @@ CFLAGS += " \
 
 LDFLAGS:append = " -lrbus -lrdkloggers"
 
+# Enable HAL mock library build for integration testing
 EXTRA_OECONF += "--enable-tests"
 
 do_install_append () {
