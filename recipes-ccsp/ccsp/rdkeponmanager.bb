@@ -35,9 +35,7 @@ do_install_append () {
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so.1
     ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so
 
-    # Install HAL trigger utility for interactive testing
-    install -d ${D}${bindir}
-    install -m 755 ${B}/tests/hal_mock/.libs/epon_hal_trigger ${D}${bindir}/
+    # Note: epon_hal_trigger is already installed by Makefile via libtool
 
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
