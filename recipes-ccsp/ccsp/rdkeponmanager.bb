@@ -14,7 +14,7 @@ SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
 
-inherit autotools pkgconfig
+inherit autotools pkgconfig systemd
 
 CFLAGS += " \
     -I${STAGING_INCDIR} \
@@ -28,6 +28,9 @@ LDFLAGS:append = " -lrbus -lrdkloggers"
 # Enable HAL mock library build for integration testing
 EXTRA_OECONF += "--enable-tests"
 
+# Systemd service
+SYSTEMD_SERVICE_${PN} = "rdkeponmanager.service"
+
 do_install_append () {
     # Install HAL mock library for integration testing
     install -d ${D}${libdir}
@@ -39,6 +42,12 @@ do_install_append () {
 
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
+
+    # Install systemd service file
+    install -d ${D}${systemd_unitdir}/system
+    install -d ${D}${systemd_unitdir}/system/multi-user.target.wants
+    install -m 0644 ${S}/systemd/utils/rdkeponmanager.service ${D}${systemd_unitdir}/system/
+    ln -sf ../rdkeponmanager.service ${D}${systemd_unitdir}/system/multi-user.target.wants/
 }
 
 FILES_${PN} = " \
@@ -47,6 +56,8 @@ FILES_${PN} = " \
    ${libdir}/libepon_hal_mock.so* \
    /usr/rdk/eponmanager \
    ${sysconfdir}/epon \
+   ${systemd_unitdir}/system/rdkeponmanager.service \
+   ${systemd_unitdir}/system/multi-user.target.wants/rdkeponmanager.service \
    "
 
 FILES_${PN}-dbg = " \
