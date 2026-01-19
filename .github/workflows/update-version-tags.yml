@@ -1,0 +1,479 @@
+name: Update Version Tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_title:
+        description: 'Pull Request and Commit Title'
+        required: false
+        default: 'Update Component Version Tags'
+        type: string
+      source_branch:
+        description: 'Source branch to create PR from'
+        required: true
+        default: 'main'
+        type: string
+      ppp_manager_tag:
+        description: 'PPP Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
+        required: false
+        type: string
+      vlan_manager_tag:
+        description: 'VLAN Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
+        required: false
+        type: string
+      wan_manager_tag:
+        description: 'WAN Manager version tag (e.g., v2.11.0) or release branch (e.g., releases/2.11.0-main)'
+        required: false
+        type: string
+      gpon_manager_tag:
+        description: 'GPON Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
+        required: false
+        type: string
+      xdsl_manager_tag:
+        description: 'xDSL Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
+        required: false
+        type: string
+      ipoe_health_check_tag:
+        description: 'IPoE Health Check version tag (e.g., v1.3.0) or release branch (e.g., releases/1.3.0-main)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workflow branch for scripts
+        uses: actions/checkout@v4
+        with:
+          path: .workflow-scripts-temp
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: |
+            .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Backup scripts before main checkout
+        run: |
+          # Create a temporary backup in /tmp (outside workspace)
+          mkdir -p /tmp/gh-scripts-backup
+          cp -r .workflow-scripts-temp/.github/scripts /tmp/gh-scripts-backup/
+          echo "✅ Scripts backed up to /tmp/gh-scripts-backup/scripts"
+          ls -la /tmp/gh-scripts-backup/scripts/
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Restore scripts to workspace
+        run: |
+          echo "📋 Restoring scripts from backup..."
+          mkdir -p .github/scripts
+          cp -v /tmp/gh-scripts-backup/scripts/* .github/scripts/
+          
+          echo "✅ Scripts restored to workspace"
+          echo "Contents of .github/scripts:"
+          ls -la .github/scripts/
+
+      - name: Validate inputs
+        run: |
+          echo "Validating workflow inputs..."
+          
+          # Function to validate tag or branch format
+          validate_input() {
+            local input=$1
+            local component=$2
+            
+            if [ -n "$input" ]; then
+              # Check if it's a version tag (vX.Y.Z)
+              if [[ "$input" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "✅ Valid version tag for $component: $input"
+              # Check if it's a release branch (releases/X.Y.Z-main)
+              elif [[ "$input" =~ ^releases/[0-9]+\.[0-9]+\.[0-9]+-main$ ]]; then
+                echo "✅ Valid release branch for $component: $input"
+              else
+                echo "❌ Invalid format for $component: $input"
+                echo "   Expected formats:"
+                echo "   - Version tag: v1.3.0"
+                echo "   - Release branch: releases/1.3.0-main"
+                exit 1
+              fi
+            fi
+          }
+          
+          # Validate all provided inputs
+          validate_input "${{ inputs.ppp_manager_tag }}" "PPP Manager"
+          validate_input "${{ inputs.vlan_manager_tag }}" "VLAN Manager"
+          validate_input "${{ inputs.wan_manager_tag }}" "WAN Manager"
+          validate_input "${{ inputs.gpon_manager_tag }}" "GPON Manager"
+          validate_input "${{ inputs.xdsl_manager_tag }}" "xDSL Manager"
+          validate_input "${{ inputs.ipoe_health_check_tag }}" "IPoE Health Check"
+          
+          # Check if at least one input is provided
+          if [ -z "${{ inputs.ppp_manager_tag }}${{ inputs.vlan_manager_tag }}${{ inputs.wan_manager_tag }}${{ inputs.gpon_manager_tag }}${{ inputs.xdsl_manager_tag }}${{ inputs.ipoe_health_check_tag }}" ]; then
+            echo "❌ No version tags or branches provided. Please specify at least one component to update."
+            exit 1
+          fi
+          
+          echo "✅ All inputs validated successfully"
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create update branch
+        id: branch
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          BRANCH_NAME="update-tags-$TIMESTAMP"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Setup scripts
+        run: |
+          # Make Python script executable
+          chmod +x .github/scripts/update_component.py
+          
+          # Verify Python is available and test the script
+          python3 --version
+          python3 .github/scripts/update_component.py --help > /dev/null
+
+      - name: Capture Previous Versions
+        id: capture-versions
+        run: |
+          # Only capture versions for version tags, skip for release branches
+          echo "📋 Checking if version capture is needed..."
+          
+          # Check if any inputs are version tags (not release branches)
+          HAS_VERSION_TAGS=false
+          [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          
+          if [ "$HAS_VERSION_TAGS" = "true" ]; then
+            echo "📋 Capturing current versions before updates (version tags detected)..."
+            
+            # Function to get current tag from BB file
+            get_current_tag() {
+              local bb_file="$1"
+              if [ -f "$bb_file" ]; then
+                # Look for active GIT_TAG first, then commented ones
+                local tag=""
+                tag=$(grep "^GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' | head -1) || true
+                if [ -z "$tag" ]; then
+                  tag=$(grep "^#GIT_TAG.*=" "$bb_file" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' | head -1) || true
+                fi
+                echo "$tag"
+              else
+                echo ""
+              fi
+            }
+            
+            # Capture and store previous versions (only for version tags)
+            if [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_PPP_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")
+              echo "PREV_PPP_MANAGER=$PREV_PPP_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_VLAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")
+              echo "PREV_VLAN_MANAGER=$PREV_VLAN_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_WAN_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")
+              echo "PREV_WAN_MANAGER=$PREV_WAN_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_GPON_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")
+              echo "PREV_GPON_MANAGER=$PREV_GPON_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_XDSL_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")
+              echo "PREV_XDSL_MANAGER=$PREV_XDSL_MANAGER" >> $GITHUB_ENV
+            fi
+            
+            if [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]]; then
+              PREV_IPOE_HC=$(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")
+              echo "PREV_IPOE_HC=$PREV_IPOE_HC" >> $GITHUB_ENV
+            fi
+            
+            # Show captured versions for debugging
+            echo "Captured previous versions:"
+            if [ -n "${{ inputs.ppp_manager_tag }}" ] && [[ "${{ inputs.ppp_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "PPP Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-ppp-manager.bb")"
+            fi
+            if [ -n "${{ inputs.vlan_manager_tag }}" ] && [[ "${{ inputs.vlan_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "VLAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-vlanmanager.bb")"
+            fi
+            if [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "WAN Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-wanmanager.bb")"
+            fi
+            if [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "GPON Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkgponmanager.bb")"
+            fi
+            if [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "xDSL Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")"
+            fi
+            if [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]]; then
+              echo "IPoE Health Check: $(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")"
+            fi
+          else
+            echo "🔀 Using release branches - skipping version capture"
+            echo "   (Previous version tracking not needed for branch workflows)"
+          fi
+
+      - name: Update Components
+        run: |
+          # Create a list of components to update
+          COMPONENTS_TO_UPDATE=""
+          
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            echo "🔄 Updating PPP Manager with tag ${{ inputs.ppp_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.ppp_manager_tag }}" \
+              "ppp-manager" \
+              "recipes-ccsp/ccsp/rdk-ppp-manager.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE PPP-Manager:${{ inputs.ppp_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            echo "🔄 Updating VLAN Manager with tag ${{ inputs.vlan_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.vlan_manager_tag }}" \
+              "vlan-manager" \
+              "recipes-ccsp/ccsp/rdk-vlanmanager.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE VLAN-Manager:${{ inputs.vlan_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            echo "🔄 Updating WAN Manager with tag ${{ inputs.wan_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.wan_manager_tag }}" \
+              "wan-manager" \
+              "recipes-ccsp/ccsp/rdk-wanmanager.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE WAN-Manager:${{ inputs.wan_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            echo "🔄 Updating GPON Manager with tag ${{ inputs.gpon_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.gpon_manager_tag }}" \
+              "gpon-manager" \
+              "recipes-ccsp/ccsp/rdkgponmanager.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE GPON-Manager:${{ inputs.gpon_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            echo "🔄 Updating xDSL Manager with tag ${{ inputs.xdsl_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.xdsl_manager_tag }}" \
+              "xdsl-manager" \
+              "recipes-ccsp/ccsp/rdkxdslmanager.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE xDSL-Manager:${{ inputs.xdsl_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            echo "🔄 Updating IPoE Health Check with tag ${{ inputs.ipoe_health_check_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.ipoe_health_check_tag }}" \
+              "ipoe-health-check" \
+              "recipes-support/ipoe-health-check/ipoe-health-check.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE IPoE-Health-Check:${{ inputs.ipoe_health_check_tag }}"
+          fi
+          
+          # Save the list of updated components for later steps
+          echo "UPDATED_COMPONENTS=$COMPONENTS_TO_UPDATE" >> $GITHUB_ENV
+          
+          if [ -z "$COMPONENTS_TO_UPDATE" ]; then
+            echo "❌ No components to update. No tags were provided."
+            exit 1
+          else
+            echo "✅ Updated components:$COMPONENTS_TO_UPDATE"
+          fi
+
+      - name: Generate PR Body
+        id: pr-body
+        run: |
+          # Generate detailed PR body
+          PR_BODY="## 🚀 Component Version Updates\n\n"
+          
+          # Helper function to generate component section
+          generate_component_section() {
+            local component=$1
+            local new_input=$2
+            local prev_tag=$3
+            local repo=$4
+            
+            if [ -z "$new_input" ]; then
+              return
+            fi
+            
+            local section="### 📦 ${component}\n\n"
+            
+            # Check if input is a release branch
+            if [[ "$new_input" =~ ^releases/.*-main$ ]]; then
+              section+="**Release Branch:** \\`${new_input}\\`\n\n"
+              section+="**🔗 Links:**\n"
+              section+="- [📋 Branch View](https://github.com/rdkcentral/${repo}/tree/${new_input})\n"
+              section+="- [📝 Branch Activity](https://github.com/rdkcentral/${repo}/commits/${new_input})\n\n"
+              section+="**What changed:**\n"
+              section+="- Updated BitBake recipe to use development branch ${new_input}\n"
+              section+="- This is for sprint validation/testing purposes\n\n"
+            else
+              # Handle version tags
+              if [ -n "$prev_tag" ] && [ "$prev_tag" != "$new_input" ]; then
+                section+="**Version Change:** \\`${prev_tag}\\` → \\`${new_input}\\`\n\n"
+                section+="**🔗 Links:**\n"
+                section+="- [📋 Compare Changes](https://github.com/rdkcentral/${repo}/compare/${prev_tag}...${new_input})\n"
+                section+="- [📝 Release Notes](https://github.com/rdkcentral/${repo}/releases/tag/${new_input})\n\n"
+                section+="**What changed:**\n"
+                section+="- Updated BitBake recipe from ${prev_tag} to ${new_input}\n"
+                section+="- See [detailed comparison](https://github.com/rdkcentral/${repo}/compare/${prev_tag}...${new_input}) for code changes\n\n"
+              else
+                section+="**New Version:** \\`${new_input}\\`"
+                [ -n "$prev_tag" ] && section+=" (no change)" || section+=" (initial setup)"
+                section+="\n\n**🔗 Links:**\n"
+                section+="- [📝 Release Notes](https://github.com/rdkcentral/${repo}/releases/tag/${new_input})\n\n"
+              fi
+            fi
+            
+            echo -e "$section"
+          }
+          
+          # Generate sections for each component
+          PR_BODY+=$(generate_component_section "PPP Manager" "${{ inputs.ppp_manager_tag }}" "$PREV_PPP_MANAGER" "ppp-manager")
+          PR_BODY+=$(generate_component_section "VLAN Manager" "${{ inputs.vlan_manager_tag }}" "$PREV_VLAN_MANAGER" "vlan-manager")
+          PR_BODY+=$(generate_component_section "WAN Manager" "${{ inputs.wan_manager_tag }}" "$PREV_WAN_MANAGER" "wan-manager")
+          PR_BODY+=$(generate_component_section "GPON Manager" "${{ inputs.gpon_manager_tag }}" "$PREV_GPON_MANAGER" "gpon-manager")
+          PR_BODY+=$(generate_component_section "xDSL Manager" "${{ inputs.xdsl_manager_tag }}" "$PREV_XDSL_MANAGER" "xdsl-manager")
+          PR_BODY+=$(generate_component_section "IPoE Health Check" "${{ inputs.ipoe_health_check_tag }}" "$PREV_IPOE_HC" "ipoe-health-check")
+          
+          # Add summary section
+          PR_BODY+="## 📋 Summary of Changes\n\n"
+          PR_BODY+="This PR updates BitBake recipe files (.bb) with new version tags and branch references.\n\n"
+          PR_BODY+="**Files Modified:**\n"
+          
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-ppp-manager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-vlanmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-wanmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdkgponmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdkxdslmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            PR_BODY+="- \`recipes-support/ipoe-health-check/ipoe-health-check.bb\`\n"
+          fi
+          
+          PR_BODY+="\n## ✅ Testing Checklist\n\n"
+          PR_BODY+="Please verify that:\n"
+          PR_BODY+="- [ ] All updated tags exist in their respective repositories\n"
+          PR_BODY+="- [ ] The branch references are correct for each tag\n"
+          PR_BODY+="- [ ] The BitBake recipes build successfully\n"
+          PR_BODY+="- [ ] Component names are preserved correctly\n\n"
+          PR_BODY+="---\n"
+          PR_BODY+="*🤖 This PR was automatically generated by the Update Version Tags workflow.*"
+          
+          # Save PR body to environment
+          echo "PR_BODY<<EOF" >> $GITHUB_ENV
+          echo -e "$PR_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Commit changes
+        id: commit
+        run: |
+          # Check if there are any changes
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes detected. All specified tags may already be current."
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Show what files will be changed
+          echo "Files to be updated:"
+          git diff --name-only
+          
+          # Use PR title as commit title
+          PR_TITLE="${{ inputs.pr_title }}"
+          
+          # Create detailed commit message with PR body
+          COMMIT_MSG="${PR_TITLE}\n\n${PR_BODY}"
+          
+          # Only stage .bb files, not the restored .github/scripts directory
+          git add recipes-ccsp/ccsp/*.bb recipes-support/ipoe-health-check/*.bb
+          echo -e "$COMMIT_MSG" | git commit -F -
+          echo "has-changes=true" >> $GITHUB_OUTPUT
+
+      - name: Push branch
+        if: steps.commit.outputs.has-changes == 'true'
+        run: |
+          git push origin ${{ steps.branch.outputs.branch-name }}
+
+      - name: Create Pull Request
+        if: steps.commit.outputs.has-changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prTitle = '${{ inputs.pr_title }}';
+            
+            // Use the PR body generated in the previous step
+            const prBody = process.env.PR_BODY;
+            
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: prTitle,
+              head: '${{ steps.branch.outputs.branch-name }}',
+              base: '${{ inputs.source_branch }}',
+              body: prBody,
+              draft: false
+            });
+            
+            console.log(`Created PR #${pr.number}: ${pr.html_url}`);
+
+      - name: No changes summary
+        if: steps.commit.outputs.has-changes == 'false'
+        run: |
+          echo "## Summary: No Changes Required"
+          echo ""
+          echo "All specified version tags are already current in the BitBake recipes."
+          echo "No pull request was created."
+          echo ""
+          echo "### Specified Tags:"
+          if [ -n "${{ inputs.ppp_manager_tag }}" ]; then
+            echo "- PPP Manager: ${{ inputs.ppp_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.vlan_manager_tag }}" ]; then
+            echo "- VLAN Manager: ${{ inputs.vlan_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.wan_manager_tag }}" ]; then
+            echo "- WAN Manager: ${{ inputs.wan_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.gpon_manager_tag }}" ]; then
+            echo "- GPON Manager: ${{ inputs.gpon_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
+            echo "- xDSL Manager: ${{ inputs.xdsl_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
+            echo "- IPoE Health Check: ${{ inputs.ipoe_health_check_tag }}"
+          fi
