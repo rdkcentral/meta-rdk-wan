@@ -13,7 +13,6 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 # Please use below part only for official release and release candidates
 SRC_URI = "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.16.0-main;protocol=https;name=WanManager;"
 SRCREV = "${AUTOREV}"
-SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 
