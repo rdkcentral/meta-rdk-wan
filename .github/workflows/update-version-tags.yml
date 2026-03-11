@@ -33,6 +33,10 @@ on:
         description: 'xDSL Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
         required: false
         type: string
+      epon_manager_tag:
+        description: 'EPON Manager version tag (e.g., v1.5.0) or release branch (e.g., releases/1.5.0-main)'
+        required: false
+        type: string
       ipoe_health_check_tag:
         description: 'IPoE Health Check version tag (e.g., v1.3.0) or release branch (e.g., releases/1.3.0-main)'
         required: false
@@ -112,10 +116,11 @@ jobs:
           validate_input "${{ inputs.wan_manager_tag }}" "WAN Manager"
           validate_input "${{ inputs.gpon_manager_tag }}" "GPON Manager"
           validate_input "${{ inputs.xdsl_manager_tag }}" "xDSL Manager"
+          validate_input "${{ inputs.epon_manager_tag }}" "EPON Manager"
           validate_input "${{ inputs.ipoe_health_check_tag }}" "IPoE Health Check"
           
           # Check if at least one input is provided
-          if [ -z "${{ inputs.ppp_manager_tag }}${{ inputs.vlan_manager_tag }}${{ inputs.wan_manager_tag }}${{ inputs.gpon_manager_tag }}${{ inputs.xdsl_manager_tag }}${{ inputs.ipoe_health_check_tag }}" ]; then
+          if [ -z "${{ inputs.ppp_manager_tag }}${{ inputs.vlan_manager_tag }}${{ inputs.wan_manager_tag }}${{ inputs.gpon_manager_tag }}${{ inputs.xdsl_manager_tag }}${{ inputs.epon_manager_tag }}${{ inputs.ipoe_health_check_tag }}" ]; then
             echo "❌ No version tags or branches provided. Please specify at least one component to update."
             exit 1
           fi
@@ -157,6 +162,7 @@ jobs:
           [ -n "${{ inputs.wan_manager_tag }}" ] && [[ "${{ inputs.wan_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
           [ -n "${{ inputs.gpon_manager_tag }}" ] && [[ "${{ inputs.gpon_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
           [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
+          [ -n "${{ inputs.epon_manager_tag }}" ] && [[ "${{ inputs.epon_manager_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
           [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]] && HAS_VERSION_TAGS=true
           
           if [ "$HAS_VERSION_TAGS" = "true" ]; then
@@ -204,6 +210,11 @@ jobs:
               echo "PREV_XDSL_MANAGER=$PREV_XDSL_MANAGER" >> $GITHUB_ENV
             fi
             
+            if [ -n "${{ inputs.epon_manager_tag }}" ] && [[ "${{ inputs.epon_manager_tag }}" =~ ^v[0-9] ]]; then
+              PREV_EPON_MANAGER=$(get_current_tag "recipes-ccsp/ccsp/rdk-eponmanager.bb")
+              echo "PREV_EPON_MANAGER=$PREV_EPON_MANAGER" >> $GITHUB_ENV
+            fi
+            
             if [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]]; then
               PREV_IPOE_HC=$(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")
               echo "PREV_IPOE_HC=$PREV_IPOE_HC" >> $GITHUB_ENV
@@ -225,6 +236,9 @@ jobs:
             fi
             if [ -n "${{ inputs.xdsl_manager_tag }}" ] && [[ "${{ inputs.xdsl_manager_tag }}" =~ ^v[0-9] ]]; then
               echo "xDSL Manager: $(get_current_tag "recipes-ccsp/ccsp/rdkxdslmanager.bb")"
+            fi
+            if [ -n "${{ inputs.epon_manager_tag }}" ] && [[ "${{ inputs.epon_manager_tag }}" =~ ^v[0-9] ]]; then
+              echo "EPON Manager: $(get_current_tag "recipes-ccsp/ccsp/rdk-eponmanager.bb")"
             fi
             if [ -n "${{ inputs.ipoe_health_check_tag }}" ] && [[ "${{ inputs.ipoe_health_check_tag }}" =~ ^v[0-9] ]]; then
               echo "IPoE Health Check: $(get_current_tag "recipes-support/ipoe-health-check/ipoe-health-check.bb")"
@@ -282,6 +296,15 @@ jobs:
               "xdsl-manager" \
               "recipes-ccsp/ccsp/rdkxdslmanager.bb"
             COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE xDSL-Manager:${{ inputs.xdsl_manager_tag }}"
+          fi
+          
+          if [ -n "${{ inputs.epon_manager_tag }}" ]; then
+            echo "🔄 Updating EPON Manager with tag ${{ inputs.epon_manager_tag }}"
+            python3 .github/scripts/update_component.py \
+              "${{ inputs.epon_manager_tag }}" \
+              "epon-manager" \
+              "recipes-ccsp/ccsp/rdk-eponmanager.bb"
+            COMPONENTS_TO_UPDATE="$COMPONENTS_TO_UPDATE EPON-Manager:${{ inputs.epon_manager_tag }}"
           fi
           
           if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
@@ -358,6 +381,7 @@ jobs:
           PR_BODY+=$(generate_component_section "WAN Manager" "${{ inputs.wan_manager_tag }}" "$PREV_WAN_MANAGER" "wan-manager")
           PR_BODY+=$(generate_component_section "GPON Manager" "${{ inputs.gpon_manager_tag }}" "$PREV_GPON_MANAGER" "gpon-manager")
           PR_BODY+=$(generate_component_section "xDSL Manager" "${{ inputs.xdsl_manager_tag }}" "$PREV_XDSL_MANAGER" "xdsl-manager")
+          PR_BODY+=$(generate_component_section "EPON Manager" "${{ inputs.epon_manager_tag }}" "$PREV_EPON_MANAGER" "epon-manager")
           PR_BODY+=$(generate_component_section "IPoE Health Check" "${{ inputs.ipoe_health_check_tag }}" "$PREV_IPOE_HC" "ipoe-health-check")
           
           # Add summary section
@@ -379,6 +403,9 @@ jobs:
           fi
           if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
             PR_BODY+="- \`recipes-ccsp/ccsp/rdkxdslmanager.bb\`\n"
+          fi
+          if [ -n "${{ inputs.epon_manager_tag }}" ]; then
+            PR_BODY+="- \`recipes-ccsp/ccsp/rdk-eponmanager.bb\`\n"
           fi
           if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
             PR_BODY+="- \`recipes-support/ipoe-health-check/ipoe-health-check.bb\`\n"
@@ -473,6 +500,9 @@ jobs:
           fi
           if [ -n "${{ inputs.xdsl_manager_tag }}" ]; then
             echo "- xDSL Manager: ${{ inputs.xdsl_manager_tag }}"
+          fi
+          if [ -n "${{ inputs.epon_manager_tag }}" ]; then
+            echo "- EPON Manager: ${{ inputs.epon_manager_tag }}"
           fi
           if [ -n "${{ inputs.ipoe_health_check_tag }}" ]; then
             echo "- IPoE Health Check: ${{ inputs.ipoe_health_check_tag }}"

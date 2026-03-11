@@ -17,6 +17,7 @@ The workflow can update version tags for the following components:
 | WAN Manager | `github.com/rdkcentral/wan-manager` | `recipes-ccsp/ccsp/rdk-wanmanager.bb` |
 | GPON Manager | `github.com/rdkcentral/gpon-manager` | `recipes-ccsp/ccsp/rdkgponmanager.bb` |
 | xDSL Manager | `github.com/rdkcentral/xdsl-manager` | `recipes-ccsp/ccsp/rdkxdslmanager.bb` |
+| EPON Manager | `github.com/rdkcentral/epon-manager` | `recipes-ccsp/ccsp/rdk-eponmanager.bb` |
 | IPoE Health Check | `github.com/rdkcentral/ipoe-health-check` | `recipes-support/ipoe-health-check/ipoe-health-check.bb` |
 
 ## How to Use

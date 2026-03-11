@@ -3,13 +3,19 @@ SUMMARY = "RDK EPON Manager component"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-DEPENDS = "rdk-logger rbus"
+DEPENDS = "rdk-logger rbus rdkb-halif-epon hal-epon"
+RDEPENDS_${PN} = "hal-epon"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Build from feature/implementation branch
-SRC_URI = "git://github.com/rdkcentral/epon-manager.git;branch=feature/implementation-rdk;protocol=https;name=EponManager;"
+SRC_URI = "git://github.com/rdkcentral/epon-manager.git;branch=main;protocol=https;name=EponManager;"
 SRCREV = "${AUTOREV}"
+
+# Please use below part only for official release and release candidates
+#GIT_TAG = ""
+#SRC_URI := "git://github.com/rdkcentral/epon-manager.git;branch=;protocol=https;name=EponManager;tag=${GIT_TAG}"
+#PV = "${GIT_TAG}+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -23,22 +29,26 @@ CFLAGS += " \
     -Wno-error=switch \
     "
 
-LDFLAGS:append = " -lrbus -lrdkloggers"
+LDFLAGS:append = " -lrbus -lrdkloggers -lhal_epon"
 
 # Enable HAL mock library build for integration testing
-EXTRA_OECONF += "--enable-tests"
+# When --enable-tests is set, HAL mock library is built and used
+# When --enable-tests is disabled, the actual HAL library (libhal_epon) is linked
+ENABLE_TESTS ?= "--disable-tests"
+EXTRA_OECONF += "${ENABLE_TESTS}"
 
 # Systemd service
 SYSTEMD_SERVICE_${PN} = "rdkeponmanager.service"
 
 do_install_append () {
-    # Install HAL mock library for integration testing
-    install -d ${D}${libdir}
-    install -m 755 ${B}/tests/hal_mock/.libs/libepon_hal_mock.so.1.0.0 ${D}${libdir}/
-    ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so.1
-    ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so
-
-    # Note: epon_hal_trigger is already installed by Makefile via libtool
+    # Install HAL mock library and trigger for integration testing (only if tests enabled)
+    if [ "${ENABLE_TESTS}" = "--enable-tests" ]; then
+        install -d ${D}${libdir}
+        install -m 755 ${B}/tests/hal_mock/.libs/libepon_hal_mock.so.1.0.0 ${D}${libdir}/
+        ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so.1
+        ln -sf libepon_hal_mock.so.1.0.0 ${D}${libdir}/libepon_hal_mock.so
+        # Note: epon_hal_trigger is already installed by Makefile via libtool
+    fi
 
     # Config files and scripts directories
     install -d ${D}/usr/rdk/eponmanager
@@ -52,13 +62,14 @@ do_install_append () {
 
 FILES_${PN} = " \
    ${bindir}/epon_manager \
-   ${bindir}/epon_hal_trigger \
-   ${libdir}/libepon_hal_mock.so* \
    /usr/rdk/eponmanager \
    ${sysconfdir}/epon \
    ${systemd_unitdir}/system/rdkeponmanager.service \
    ${systemd_unitdir}/system/multi-user.target.wants/rdkeponmanager.service \
    "
+
+# Add test files only when tests are enabled
+FILES_${PN} += "${@bb.utils.contains('ENABLE_TESTS', '--enable-tests', '${bindir}/epon_hal_trigger ${libdir}/libepon_hal_mock.so*', '', d)}"
 
 FILES_${PN}-dbg = " \
     ${prefix}/rdk/eponmanager/.debug \
