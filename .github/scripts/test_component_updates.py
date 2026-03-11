@@ -64,6 +64,11 @@ class ComponentTester:
             'name': 'xDSLManager',
             'display': 'xDSL Manager'
         },
+        'epon-manager': {
+            'bb_file': 'recipes-ccsp/ccsp/rdk-eponmanager.bb',
+            'name': 'EponManager',
+            'display': 'EPON Manager'
+        },
         'ipoe-health-check': {
             'bb_file': 'recipes-support/ipoe-health-check/ipoe-health-check.bb',
             'name': 'IPoEHealthCheck',

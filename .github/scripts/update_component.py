@@ -177,6 +177,7 @@ class ComponentUpdater:
             'wan-manager': 'WanManager',
             'gpon-manager': 'GponManager',
             'xdsl-manager': 'xDSLManager',
+            'epon-manager': 'EponManager',
             'ipoe-health-check': 'IPoEHealthCheck'
         }
         
