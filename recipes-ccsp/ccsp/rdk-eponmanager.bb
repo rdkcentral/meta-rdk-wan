@@ -9,7 +9,7 @@ RDEPENDS_${PN} = "hal-epon"
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI = "git://github.com/rdkcentral/epon-manager.git;branch=main;protocol=https;name=EponManager;"
+SRC_URI = "git://github.com/rdkcentral/epon-manager.git;branch=releases/1.0.0-main;protocol=https;name=EponManager;"
 SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
