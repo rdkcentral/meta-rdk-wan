@@ -24,7 +24,7 @@ CFLAGS += " \
     -Wno-error=switch \
     "
 
-LDFLAGS:append = " -lrbus -lrdkloggers -lhal_epon"
+LDFLAGS += " -lrbus -lrdkloggers -lhal_epon"
 
 # Enable HAL mock library build for integration testing
 # When --enable-tests is set, HAL mock library is built and used
@@ -72,4 +72,4 @@ FILES_${PN}-dbg = " \
     ${bindir}/.debug \
     ${libdir}/.debug \
 "
-INSANE_SKIP:${PN} += "dev-deps useless-rpaths"
+INSANE_SKIP_${PN} += "dev-deps useless-rpaths"
