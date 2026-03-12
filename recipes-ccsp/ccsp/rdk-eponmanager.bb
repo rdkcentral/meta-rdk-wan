@@ -72,4 +72,4 @@ FILES_${PN}-dbg = " \
     ${bindir}/.debug \
     ${libdir}/.debug \
 "
-INSANE_SKIP:${PN} += "dev-deps useless-rpaths"
+INSANE_SKIP_${PN} += "dev-deps useless-rpaths"
