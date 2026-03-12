@@ -24,7 +24,7 @@ CFLAGS += " \
     -Wno-error=switch \
     "
 
-LDFLAGS:append = " -lrbus -lrdkloggers -lhal_epon"
+LDFLAGS += " -lrbus -lrdkloggers -lhal_epon"
 
 # Enable HAL mock library build for integration testing
 # When --enable-tests is set, HAL mock library is built and used
