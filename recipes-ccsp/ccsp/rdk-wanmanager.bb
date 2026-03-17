@@ -14,7 +14,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 # Please use below part only for official release and release candidates
 SRC_URI := "git://github.com/devinmungan/wan-manager.git;branch=dslite-integration;protocol=https;name=WanManager;"
 PV = "${RDK_RELEASE}+git${SRCPV}"
-SRCREV = "a356f65f8a0049a96498b10ea478c1b5a8eb6679"
+SRCREV = "a356f65f8a0049a96498b10ea478c1b5a8eb6678"
 
 S = "${WORKDIR}/git"
 
