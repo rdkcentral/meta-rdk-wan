@@ -3,14 +3,18 @@ SUMMARY = "RDK EPON Manager component"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
+# Please use below part only for official release and release candidates
+GIT_TAG = "v1.0.0"
+
 DEPENDS = "rdk-logger rbus rdkb-halif-epon hal-epon"
 RDEPENDS_${PN} = "hal-epon"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI = "git://github.com/rdkcentral/epon-manager.git;branch=releases/1.0.0-main;protocol=https;name=EponManager;"
-SRCREV = "${AUTOREV}"
+SRC_URI := "git://github.com/rdkcentral/epon-manager.git;branch=releases/1.0.0-main;protocol=https;name=EponManager;tag=${GIT_TAG}"
+PV = "${GIT_TAG}+git${SRCPV}"
+#SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
