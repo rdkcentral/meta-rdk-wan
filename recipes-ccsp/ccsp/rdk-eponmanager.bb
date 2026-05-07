@@ -4,17 +4,17 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
 # Please use below part only for official release and release candidates
-GIT_TAG = "v1.0.0"
+#GIT_TAG = "v1.0.0"
 
-DEPENDS = "rdk-logger rbus rdkb-halif-epon hal-epon"
-RDEPENDS_${PN} = "hal-epon"
+DEPENDS = "rdk-logger rbus rdkb-halif-epon hal-epon avro-c telemetry libparodus openssl"
+RDEPENDS_${PN} = "hal-epon avro-c telemetry libparodus"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI := "git://github.com/rdkcentral/epon-manager.git;branch=releases/1.0.0-main;protocol=https;name=EponManager;tag=${GIT_TAG}"
-PV = "${GIT_TAG}+git${SRCPV}"
-#SRCREV = "${AUTOREV}"
+SRC_URI := "git://github.com/rdkcentral/epon-manager.git;branch=feature/telemetry-docs;protocol=https;name=EponManager;"
+#PV = "${GIT_TAG}+git${SRCPV}"
+SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -28,7 +28,7 @@ CFLAGS += " \
     -Wno-error=switch \
     "
 
-LDFLAGS += " -lrbus -lrdkloggers -lhal_epon"
+LDFLAGS += " -lrbus -lrdkloggers -lhal_epon -lavro -ltelemetry_msgsender -llibparodus -lcrypto"
 
 # Enable HAL mock library build for integration testing
 # When --enable-tests is set, HAL mock library is built and used
@@ -62,6 +62,8 @@ do_install_append () {
 FILES_${PN} = " \
    ${bindir}/epon_manager \
    /usr/rdk/eponmanager \
+   /usr/ccsp/harvester \
+   /usr/ccsp/harvester/EponReport.avsc \
    ${sysconfdir}/epon \
    ${systemd_unitdir}/system/rdkeponmanager.service \
    ${systemd_unitdir}/system/multi-user.target.wants/rdkeponmanager.service \
