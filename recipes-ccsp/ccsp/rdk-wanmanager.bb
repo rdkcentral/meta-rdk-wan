@@ -4,7 +4,7 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
 # Please use below part only for official release and release candidates
-GIT_TAG = "v2.15.0"
+GIT_TAG = "v2.15.1"
 
 # Please use below part only for official release and release candidates
 
