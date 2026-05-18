@@ -12,7 +12,6 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 # Please use below part only for official release and release candidates
 SRC_URI = "git://github.com/rdkcentral/vlan-manager.git;branch=releases/1.9.0-main;protocol=https;name=VlanBridgingManager;"
 SRCREV = "${AUTOREV}"
-SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 
