@@ -7,7 +7,9 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7ca
 GIT_TAG = "v1.0.0"
 
 DEPENDS = "rdk-logger rbus rdkb-halif-epon hal-epon"
+DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
 RDEPENDS_${PN} = "hal-epon"
+RDEPENDS_${PN}_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
@@ -29,12 +31,14 @@ CFLAGS += " \
     "
 
 LDFLAGS += " -lrbus -lrdkloggers -lhal_epon"
+CFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', '-DENABLE_FEATURE_TELEMETRY2_0', '', d)}"
 
 # Enable HAL mock library build for integration testing
 # When --enable-tests is set, HAL mock library is built and used
 # When --enable-tests is disabled, the actual HAL library (libhal_epon) is linked
 ENABLE_TESTS ?= "--disable-tests"
 EXTRA_OECONF += "${ENABLE_TESTS}"
+EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', '--enable-telemetry2-0', '--disable-telemetry2-0', d)}"
 
 # Systemd service
 SYSTEMD_SERVICE_${PN} = "rdkeponmanager.service"
