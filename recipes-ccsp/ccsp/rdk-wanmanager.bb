@@ -4,7 +4,9 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
 # Please use below part only for official release and release candidates
-GIT_TAG = "v2.16.0"
+GIT_TAG = "v2.17.0"
+
+# Please use below part only for official release and release candidates
 
 # Please use below part only for official release and release candidates
 
@@ -14,7 +16,7 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.16.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
+SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.17.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 #SRCREV = "${AUTOREV}"
 
@@ -51,6 +53,9 @@ MAPT_FEATURE_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt','
 # Flag for DHCPmanager conf
 EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dhcp_manager", " --enable-dhcp_manager=yes", " ",d)}"
 
+# Flag for next generation DSLite support
+EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dslite_v2", " --enable-dslite-v2=yes", " ",d)}"
+
 # Use the variable in CFLAGS_append
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
@@ -85,6 +90,12 @@ do_compile_prepend () {
 
     if [ "${MAPT_FEATURE_ENABLED}" = "true" ]; then
         sed -i '2i <?define FEATURE_MAPT=True?>' ${S}/config/${XML_NAME}
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dslite_v2', 'true', 'false', d)}; then
+        if ! grep -q '^<?define FEATURE_DSLITE_V2=True?>' ${S}/config/${XML_NAME}; then
+            sed -i '2i <?define FEATURE_DSLITE_V2=True?>' ${S}/config/${XML_NAME}
+        fi
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', 'true', 'false', d)}; then
