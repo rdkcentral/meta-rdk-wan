@@ -7,9 +7,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7ca
 GIT_TAG = "v1.0.0"
 
 DEPENDS = "rdk-logger rbus rdkb-halif-epon hal-epon"
-DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
-RDEPENDS_${PN} = "hal-epon"
-RDEPENDS_${PN}_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
+RDEPENDS:${PN} = "hal-epon"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
@@ -18,7 +16,6 @@ SRC_URI := "git://github.com/rdkcentral/epon-manager.git;branch=releases/1.0.0-m
 PV = "${GIT_TAG}+git${SRCPV}"
 #SRCREV = "${AUTOREV}"
 
-S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
 
 inherit autotools pkgconfig systemd
@@ -41,9 +38,9 @@ EXTRA_OECONF += "${ENABLE_TESTS}"
 EXTRA_OECONF_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', '--enable-telemetry2-0', '--disable-telemetry2-0', d)}"
 
 # Systemd service
-SYSTEMD_SERVICE_${PN} = "rdkeponmanager.service"
+SYSTEMD_SERVICE:${PN} = "rdkeponmanager.service"
 
-do_install_append () {
+do_install:append () {
     # Install HAL mock library and trigger for integration testing (only if tests enabled)
     if [ "${ENABLE_TESTS}" = "--enable-tests" ]; then
         install -d ${D}${libdir}
@@ -63,7 +60,7 @@ do_install_append () {
     ln -sf ../rdkeponmanager.service ${D}${systemd_unitdir}/system/multi-user.target.wants/
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${bindir}/epon_manager \
    /usr/rdk/eponmanager \
    ${sysconfdir}/epon \
@@ -72,12 +69,12 @@ FILES_${PN} = " \
    "
 
 # Add test files only when tests are enabled
-FILES_${PN} += "${@bb.utils.contains('ENABLE_TESTS', '--enable-tests', '${bindir}/epon_hal_trigger ${libdir}/libepon_hal_mock.so*', '', d)}"
+FILES:${PN} += "${@bb.utils.contains('ENABLE_TESTS', '--enable-tests', '${bindir}/epon_hal_trigger ${libdir}/libepon_hal_mock.so*', '', d)}"
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${prefix}/rdk/eponmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \
     ${libdir}/.debug \
 "
-INSANE_SKIP_${PN} += "dev-deps useless-rpaths"
+INSANE_SKIP:${PN} += "dev-deps useless-rpaths"
