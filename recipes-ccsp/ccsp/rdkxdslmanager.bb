@@ -63,7 +63,7 @@ FILES:${PN}-gtest = "\
 "
 
 FILES:${PN} = " \
-recipes-ccsp/ccsp/rdkxdslmanager.bb   ${libdir}/systemd \
+   ${libdir}/systemd \
    ${bindir}/xdslmanager \
    ${exec_prefix}/ccsp/harvester/XdslReport.avsc \
    ${prefix}/rdk/xdslmanager/RdkXdslManager.xml \

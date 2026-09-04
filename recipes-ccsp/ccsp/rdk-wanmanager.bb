@@ -11,7 +11,7 @@ GIT_TAG = "v2.17.0"
 # Please use below part only for official release and release candidates
 
 DEPENDS = "ccsp-common-library hal-cm dbus rdk-logger utopia hal-dhcpv4c libunpriv ccsp-misc"
-DEPENDS:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'rdkb_wan_manager', 'nanomsg', '', d)}"
+DEPENDS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', 'nanomsg', '', d)}"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
@@ -23,8 +23,8 @@ PV = "${GIT_TAG}+git${SRCPV}"
 
 inherit autotools pkgconfig ${@bb.utils.contains_any("DISTRO_FEATURES", "kirkstone wrynose", "python3native", "pythonnative", d)}
 
-export ISRDKB_WAN_UNIFICATION_ENABLED = "${@bb.utils.contains_any('DISTRO_FEATURES', 'WanManagerUnificationEnable','true','false', d)}"
-export XML_NAME = "${@bb.utils.contains_any('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','RdkWanManager_v2.xml','RdkWanManager.xml', d)}"
+export ISRDKB_WAN_UNIFICATION_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable','true','false', d)}"
+export XML_NAME = "${@bb.utils.contains('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','RdkWanManager_v2.xml','RdkWanManager.xml', d)}"
 
 CFLAGS:append = " -fcommon"
 CFLAGS:append = " \
@@ -35,52 +35,52 @@ CFLAGS:append = " \
     -I ${STAGING_INCDIR}/syscfg \
     -I ${STAGING_INCDIR}/sysevent \
     "
-CFLAGS:append  = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
-LDFLAGS:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'rdkb_wan_manager', '-lnanomsg', '', d)}"
-CFLAGS:append  = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'WanFailOverSupportEnable', '-DRBUS_BUILD_FLAG_ENABLE', '', d)}"
-CFLAGS:append  = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'ipoe_health_check', '-DFEATURE_IPOE_HEALTH_CHECK', '', d)}"
-CFLAGS:append += " ${@bb.utils.contains_any('DISTRO_FEATURES', 'WanFailOverSupportEnable', ' -DWAN_FAILOVER_SUPPORTED', '', d)}"
-CFLAGS:append  = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'feature_mape', '-DFEATURE_MAPE', '', d)}"
-PACKAGES += "${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
+LDFLAGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-lnanomsg', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', '-DRBUS_BUILD_FLAG_ENABLE', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'ipoe_health_check', '-DFEATURE_IPOE_HEALTH_CHECK', '', d)}"
+CFLAGS:append += " ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', ' -DWAN_FAILOVER_SUPPORTED', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'feature_mape', '-DFEATURE_MAPE', '', d)}"
+PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${PN}-gtest', '', d)}"
 
-CFLAGS:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'bci', '-DCISCO_CONFIG_TRUE_STATIC_IP -DCISCO_CONFIG_DHCPV6_PREFIX_DELEGATION -DCONFIG_CISCO_TRUE_STATIC_IP -D_BCI_FEATURE_REQ', '', d)}"
+CFLAGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'bci', '-DCISCO_CONFIG_TRUE_STATIC_IP -DCISCO_CONFIG_DHCPV6_PREFIX_DELEGATION -DCONFIG_CISCO_TRUE_STATIC_IP -D_BCI_FEATURE_REQ', '', d)}"
 
-EXTRA_OECONF:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'WanManagerUnificationEnable', '--enable-wanunificationsupport', '', d)}"
+EXTRA_OECONF:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable', '--enable-wanunificationsupport', '', d)}"
 # Define a variable to consolidate the check for MAPT features based on DISTRO_FEATURES
-MAPT_FEATURE_ENABLED = "${@bb.utils.contains_any('DISTRO_FEATURES', 'feature_mapt','true', bb.utils.contains_any('DISTRO_FEATURES', 'unified_mapt', 'true', 'false', d), d)}"
+MAPT_FEATURE_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'feature_mapt','true', bb.utils.contains('DISTRO_FEATURES', 'unified_mapt', 'true', 'false', d), d)}"
 
 # Flag for DHCPmanager conf
-EXTRA_OECONF += "${@bb.utils.contains_any("DISTRO_FEATURES", "dhcp_manager", " --enable-dhcp_manager=yes", " ",d)}"
+EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dhcp_manager", " --enable-dhcp_manager=yes", " ",d)}"
 
 # Use the variable in CFLAGS:append
 CFLAGS:append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
 CFLAGS:append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
 CFLAGS:append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DNAT46_KERNEL_SUPPORT' or ''}"
 
-DEPENDS:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
-CFLAGS:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'telemetry2_0', '-DENABLE_FEATURE_TELEMETRY2_0', '', d)} "
-LDFLAGS:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'telemetry2_0', ' -ltelemetry_msgsender ', '', d)} "
+DEPENDS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', 'telemetry', '', d)}"
+CFLAGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', '-DENABLE_FEATURE_TELEMETRY2_0', '', d)} "
+LDFLAGS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'telemetry2_0', ' -ltelemetry_msgsender ', '', d)} "
 
 LDFLAGS += " -lprivilege -lpthread -lstdc++"
 
 do_compile:prepend () {
-    if ${@bb.utils.contains_any('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
     sed -i '2i <?define RBUS_BUILD_FLAG_ENABLE=True?>' ${S}/config/${XML_NAME}
     fi
 
-    if ${@bb.utils.contains_any('DISTRO_FEATURES', 'RbusBuildFlagEnable', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'RbusBuildFlagEnable', 'true', 'false', d)}; then
     sed -i '2i <?define RBUS_BUILD_FLAG_ENABLE=True?>' ${S}/config/${XML_NAME}
     fi
 
-    if ${@bb.utils.contains_any('DISTRO_FEATURES', 'dhcp_manager', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dhcp_manager', 'true', 'false', d)}; then
         sed -i '2i <?define FEATURE_RDKB_DHCP_MANAGER=True?>' ${S}/config/${XML_NAME}
     fi
 
-    if ${@bb.utils.contains_any('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'WanFailOverSupportEnable', 'true', 'false', d)}; then
     sed -i '2i <?define RBUS_BUILD_FLAG_ENABLE=True?>' ${S}/config/${XML_NAME}
     fi
 
-    if ${@bb.utils.contains_any('DISTRO_FEATURES', 'RbusBuildFlagEnable', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'RbusBuildFlagEnable', 'true', 'false', d)}; then
     sed -i '2i <?define RBUS_BUILD_FLAG_ENABLE=True?>' ${S}/config/${XML_NAME}
     fi
 
@@ -88,7 +88,7 @@ do_compile:prepend () {
         sed -i '2i <?define FEATURE_MAPT=True?>' ${S}/config/${XML_NAME}
     fi
 
-    if ${@bb.utils.contains_any('DISTRO_FEATURES', 'rdkb_wan_manager', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', 'true', 'false', d)}; then
         (${PYTHON} ${STAGING_BINDIR_NATIVE}/dm_pack_code_gen.py ${S}/config/${XML_NAME} ${S}/source/WanManager/dm_pack_datamodel.c)
     fi
 }
@@ -115,14 +115,14 @@ FILES:${PN}-dbg = " \
     ${libdir}/.debug \
 "
 FILES:${PN}-gtest = "\
-    ${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', '${bindir}/RdkWanManager_gtest.bin', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '${bindir}/RdkWanManager_gtest.bin', '', d)} \
 "
-EXTRA_OECONF:append = " ${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', '--enable-gtestapp', '', d)}"
+EXTRA_OECONF:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', '--enable-gtestapp', '', d)}"
 
-DOWNLOAD_APPS="${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', 'gtestapp-RdkWanManager', '', d)}"
+DOWNLOAD_APPS="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'gtestapp-RdkWanManager', '', d)}"
 inherit comcast-package-deploy
-CUSTOM_PKG_EXTNS="${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', 'gtest', '', d)}"
-SKIP_MAIN_PKG="${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', 'yes', 'no', d)}"
-DOWNLOAD_ON_DEMAND="${@bb.utils.contains_any('DISTRO_FEATURES', 'gtestapp', 'yes', 'no', d)}"
+CUSTOM_PKG_EXTNS="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'gtest', '', d)}"
+SKIP_MAIN_PKG="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'yes', 'no', d)}"
+DOWNLOAD_ON_DEMAND="${@bb.utils.contains('DISTRO_FEATURES', 'gtestapp', 'yes', 'no', d)}"
 
 do_configure[depends] += "halinterface:do_install"
