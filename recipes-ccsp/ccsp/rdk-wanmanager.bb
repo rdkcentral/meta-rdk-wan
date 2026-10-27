@@ -4,7 +4,7 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
 # Please use below part only for official release and release candidates
-GIT_TAG = "v2.18.0"
+GIT_TAG = "v2.17.5"
 
 # Please use below part only for official release and release candidates
 
@@ -18,7 +18,7 @@ DEPENDS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.18.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
+SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.17.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 #SRCREV = "${AUTOREV}"
 
