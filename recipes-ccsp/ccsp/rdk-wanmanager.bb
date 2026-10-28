@@ -22,7 +22,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.18.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 #SRCREV = "${AUTOREV}"
-inherit autotools pkgconfig ${@bb.utils.contains("DISTRO_FEATURES", "kirkstone", "python3native", "python3native", d)}
+inherit autotools pkgconfig ${@bb.utils.contains_any("DISTRO_FEATURES", "kirkstone wrynose", "python3native", "pythonnative", d)}
 
 export ISRDKB_WAN_UNIFICATION_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable','true','false', d)}"
 export XML_NAME = "${@bb.utils.contains('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','RdkWanManager_v2.xml','RdkWanManager.xml', d)}"
