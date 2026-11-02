@@ -10,6 +10,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 GIT_TAG = "v1.6.0"
 SRC_URI = "git://github.com/rdkcentral/xdsl-manager.git;branch=releases/1.6.0-main;protocol=https;name=xDSLManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
+
 inherit autotools pkgconfig
 
 CFLAGS:append = " \
@@ -36,7 +37,7 @@ CFLAGS:append = "\
 "
 CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 LDFLAGS:append = " -lrt -lm"
-LDFLAGS:remove_morty = " -lrt -lm"
+LDFLAGS:remove:morty = " -lrt -lm"
 
 do_install:append () {
     # Config files and scripts

@@ -19,7 +19,7 @@ require recipes-ccsp/ccsp/ccsp_common.inc
 SRC_URI := "git://github.com/rdkcentral/epon-manager.git;branch=releases/1.1.0-main;protocol=https;name=EponManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 #SRCREV = "${AUTOREV}"
-B = "${WORKDIR}/build"
+
 
 inherit autotools pkgconfig systemd
 

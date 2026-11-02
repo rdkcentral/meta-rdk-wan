@@ -13,6 +13,7 @@ SRC_URI = "git://github.com/rdkcentral/gpon-manager.git;branch=releases/1.7.0-ma
 PV = "${GIT_TAG}+git${SRCPV}"
 
 EXTRA_OECONF:append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
+
 B = "${WORKDIR}/build"
 
 inherit autotools pkgconfig
