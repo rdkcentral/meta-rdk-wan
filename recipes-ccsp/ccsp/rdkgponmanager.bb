@@ -12,9 +12,8 @@ GIT_TAG = "v1.7.0"
 SRC_URI = "git://github.com/rdkcentral/gpon-manager.git;branch=releases/1.7.0-main;protocol=https;name=GponManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 
-EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
+EXTRA_OECONF:append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
-S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
 
 inherit autotools pkgconfig
@@ -23,7 +22,7 @@ export ISRDKB_WAN_UNIFICATION_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES',
 export SCHEMA_FILE = "${@bb.utils.contains('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','gpon_wan_unify_hal_schema.json','gpon_hal_schema.json', d)}"
 export CONF_FILE = "${@bb.utils.contains('ISRDKB_WAN_UNIFICATION_ENABLED', 'true','gpon_manager_wan_unify_conf.json','gpon_manager_conf.json', d)}"
 
-CFLAGS_append = " \
+CFLAGS:append = " \
     -I${STAGING_INCDIR} \
     -I${STAGING_INCDIR}/dbus-1.0 \
     -I${STAGING_LIBDIR}/dbus-1.0/include \
@@ -34,9 +33,9 @@ CFLAGS_append = " \
     -Wall \
     -Wno-error=switch \
     "
-CFLAGS_append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
+CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 
-do_compile_prepend () {
+do_compile:prepend () {
     (${PYTHON} ${STAGING_BINDIR_NATIVE}/dm_pack_code_gen.py ${S}/config/RdkGponManager.xml ${S}/source/GponManager/dm_pack_datamodel.c)
 }
 
@@ -54,7 +53,7 @@ do_install () {
     install -m 644 ${S}/hal_schema/${SCHEMA_FILE} ${D}${sysconfdir}/rdk/schemas
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
    ${bindir}/GponManager \
    ${prefix}/rdk/gponmanager/RdkGponManager.xml \
    ${sysconfdir}/rdk/conf \
@@ -63,10 +62,10 @@ FILES_${PN} = " \
    ${sysconfdir}/rdk/schemas/${SCHEMA_FILE} \
 "
 
-FILES_${PN}-dbg = " \
+FILES:${PN}-dbg = " \
     ${prefix}/rdk/gponmanager/.debug \
     /usr/src/debug \
     ${bindir}/.debug \
     ${libdir}/.debug \
 "
-INSANE_SKIP_${PN} += "dev-deps"
+INSANE_SKIP:${PN} += "dev-deps"
