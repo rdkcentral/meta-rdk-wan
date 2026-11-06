@@ -6,10 +6,6 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 # Please use below part only for official release and release candidates
 GIT_TAG = "v1.11.0"
 
-# Please use below part only for official release and release candidates
-
-# Please use below part only for official release and release candidates
-
 DEPENDS = "ccsp-common-library dbus rdk-logger utopia hal-platform libunpriv"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
