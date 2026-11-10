@@ -36,7 +36,7 @@ CFLAGS:append = "\
 "
 CFLAGS:append  = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '-DFEATURE_RDKB_WAN_MANAGER', '', d)}"
 LDFLAGS:append = " -lrt -lm"
-LDFLAGS:remove_morty = " -lrt -lm"
+LDFLAGS:remove:morty = " -lrt -lm"
 
 do_install:append () {
     # Config files and scripts
