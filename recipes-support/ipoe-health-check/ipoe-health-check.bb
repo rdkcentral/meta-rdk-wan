@@ -10,9 +10,12 @@ GIT_TAG = "v1.6.0"
 DEPENDS = "rdk-logger rdk-wanmanager"
 
 # Please use below part only for official release and release candidates
-SRC_URI := "git://github.com/rdkcentral/ipoe-health-check.git;branch=releases/1.6.0-main;protocol=https;name=IPoEHealthCheck;tag=${GIT_TAG}"
+SRC_URI := "git://github.com/rdkcentral/ipoe-health-check.git;branch=releases/1.6.0-main;protocol=https;name=IPoEHealthCheck;tag=${GIT_TAG};destsuffix=${BPN}"
 PV = "${GIT_TAG}+git${SRCPV}"
 #SRCREV = "${AUTOREV}"
+
+
+S = "${UNPACKDIR}/${BPN}"
 inherit autotools pkgconfig
 
 CFLAGS:append = " \

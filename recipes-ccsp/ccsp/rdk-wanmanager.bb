@@ -7,7 +7,6 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 # Please use below part only for official release and release candidates
 GIT_TAG = "v2.18.3"
 
-# Please use below part only for official release and release candidates
 
 # Please use below part only for official release and release candidates
 
@@ -19,9 +18,11 @@ DEPENDS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'rdkb_wan_manager', '
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.18.0-main;protocol=https;name=WanManager;tag=${GIT_TAG}"
+SRC_URI := "git://github.com/rdkcentral/wan-manager.git;branch=releases/2.18.0-main;protocol=https;name=WanManager;tag=${GIT_TAG};destsuffix=${BPN}"
 PV = "${GIT_TAG}+git${SRCPV}"
+S = "${UNPACKDIR}/${BPN}"
 #SRCREV = "${AUTOREV}"
+
 inherit autotools pkgconfig ${@bb.utils.contains_any("DISTRO_FEATURES", "kirkstone wrynose", "python3native", "pythonnative", d)}
 
 export ISRDKB_WAN_UNIFICATION_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'WanManagerUnificationEnable','true','false', d)}"
