@@ -4,14 +4,17 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
 # Please use below part only for official release and release candidates
-GIT_TAG = "v1.10.0"
+
+GIT_TAG = "v1.11.0"
+
 
 DEPENDS = "ccsp-common-library dbus rdk-logger utopia hal-platform libunpriv"
 
 require recipes-ccsp/ccsp/ccsp_common.inc
 
 # Please use below part only for official release and release candidates
-SRC_URI := "git://github.com/rdkcentral/vlan-manager.git;branch=releases/1.10.0-main;protocol=https;name=VlanBridgingManager;tag=${GIT_TAG};destsuffix=${BPN}"
+
+SRC_URI := "git://github.com/rdkcentral/vlan-manager.git;branch=releases/1.11.0-main;protocol=https;name=VlanBridgingManager;tag=${GIT_TAG}"
 PV = "${GIT_TAG}+git${SRCPV}"
 S = "${UNPACKDIR}/${BPN}"
 #SRCREV = "${AUTOREV}"
