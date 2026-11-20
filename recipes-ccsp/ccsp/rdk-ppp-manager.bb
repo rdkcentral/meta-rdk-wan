@@ -39,6 +39,9 @@ LDFLAGS_remove_morty = " -ldbus-1"
 
 EXTRA_OECONF_append  = " --with-ccsp-platform=bcm --with-ccsp-arch=arm "
 
+# Uncomment to enable MultiWAN parallel PPP sessions
+#EXTRA_OECONF += " --enable-multiwan=yes"
+
 do_install_append () {
     # Config files and scripts
     install -d ${D}${exec_prefix}/rdk/pppmanager

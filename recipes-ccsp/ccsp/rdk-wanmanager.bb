@@ -52,6 +52,9 @@ EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dhcp_manager", " --ena
 # Flag for next generation DSLite support
 EXTRA_OECONF += "${@bb.utils.contains("DISTRO_FEATURES", "dslite_v2", " --enable-dslite-v2=yes", " ",d)}"
 
+# Uncomment to enable MultiWAN
+EXTRA_OECONF += " --enable-multiwan=yes"
+
 # Use the variable in CFLAGS_append
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT' or ''}"
 CFLAGS_append += " ${@'${MAPT_FEATURE_ENABLED}' == 'true' and '-DFEATURE_MAPT_DEBUG' or ''}"
